@@ -1,0 +1,30 @@
+require: rubocop-rspec
+
+AllCops:
+  TargetRubyVersion: 2.5
+
+Layout/EndOfLine:
+  EnforcedStyle: lf
+
+Layout/LineLength:
+  Max: 160
+
+Metrics/ParameterLists:
+  CountKeywordArgs: false
+
+Style/PercentLiteralDelimiters:
+  PreferredDelimiters:
+    default: ()
+    '%i': '[]'
+    '%I': '[]'
+    '%r': '{}'
+    '%w': '[]'
+    '%W': '[]'
+
+Style/StringLiterals:
+  Enabled: true
+  EnforcedStyle: single_quotes
+
+Style/StringLiteralsInInterpolation:
+  Enabled: true
+  EnforcedStyle: single_quotes

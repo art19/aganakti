@@ -1,0 +1,14 @@
+---
+language: ruby
+cache: bundler
+rvm:
+  - 2.5
+  - 2.6
+  - 2.7
+  - 3.0
+gemfile:
+  - Gemfile.rails51
+  - Gemfile.rails52
+  - Gemfile.rails60
+  - Gemfile.rails61
+before_install: gem install bundler -v 2.2.7
