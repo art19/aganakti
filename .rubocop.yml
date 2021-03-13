@@ -12,6 +12,10 @@ Layout/LineLength:
 Metrics/ParameterLists:
   CountKeywordArgs: false
 
+# Rubocop needs to fix this bug: https://github.com/rubocop/rubocop/issues/5953
+Style/AccessModifierDeclarations:
+  Enabled: false
+
 Style/PercentLiteralDelimiters:
   PreferredDelimiters:
     default: ()
