@@ -18,6 +18,27 @@ module Aganakti
   class ConfigurationError < Error; end
 
   ##
+  # A query has already executed, but an operation was attempted which can only be
+  # performed before the query executes.
+  class QueryAlreadyExecutedError < Error; end
+
+  ##
+  # The query was not able to retrieve the entire response body
+  class QueryResultTruncatedError < Error; end
+
+  ##
+  # The query result was not able to be parsed
+  class QueryResultUnparseableError < Error; end
+
+  ##
+  # The HTTP request timed out while attempting to execute the query
+  class QueryTimedOutError < Error; end
+
+  ##
+  # The server or client reported an error executing the query
+  class QueryError < Error; end
+
+  ##
   # Creates a new client instance.
   #
   # @param uri [String] the URI of the Druid SQL service, including username and password if applicable
