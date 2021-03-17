@@ -22,6 +22,17 @@ module Aganakti
     def initialize(uri, typhoeus_options)
       @typhoeus_options = typhoeus_options
       @uri              = uri
+
+    ##
+    # Escapes an identifier like a table or column name so that it can be safely interpolated into a query. Do not use this
+    # to escape literals like values in +WHERE+ clauses.
+    #
+    # @param str [String] the identifier you want to escape
+    # @return [String] the escaped identifier
+    # @see https://druid.apache.org/docs/latest/querying/sql.html#identifiers-and-literals Apache Druid: SQL: Identifiers and Literals
+    def escape_identifier(str)
+      str.gsub('"', '""')
+    end
     end
   end
 end
