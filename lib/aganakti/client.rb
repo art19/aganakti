@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require_relative 'query'
+
 module Aganakti
   ##
   # An instance of a Druid SQL client. Because Typhoeus/libcurl handle all thread and process safety issues, it is not necessary to create a
@@ -34,6 +36,21 @@ module Aganakti
     def escape_identifier(str)
       str.gsub('"', '""')
     end
+
+    ##
+    # Build or perform a query against Druid
+    #
+    # @param sql [String]
+    #   The SQL query to execute, which can possibly contain +?+ where you want to parameterize (like Rails)
+    # @param params [Array<BigDecimal, Date, DateTime, Float, Integer, String, Time>]
+    #   Optional parameters for the query. The type of the parameter (BigDecimal, String, etc.) determines how it is
+    #   interpreted by Druid.
+    # @return [Aganakti::Query]
+    #   The query instance, which can be operated on as if it were an +ActiveRecord::Result+, or additional modifiers can
+    #   be added as needed.
+    def query(sql, *params)
+      Query.new(self, sql, params)
     end
+    alias ᏥᏔᏲᎯᎭ query # rubocop:disable Naming/AsciiIdentifiers
   end
 end
