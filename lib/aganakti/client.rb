@@ -20,8 +20,9 @@ module Aganakti
     # @param uri [String] the URI to the Druid SQL endpoint, with username/password in it
     # @param typhoeus_options [Hash] options to use with Typhoeus
     def initialize(uri, typhoeus_options)
-      @typhoeus_options = typhoeus_options
-      @uri              = uri
+      @typhoeus_options = typhoeus_options.freeze
+      @uri              = uri.freeze
+    end
 
     ##
     # Escapes an identifier like a table or column name so that it can be safely interpolated into a query. Do not use this
