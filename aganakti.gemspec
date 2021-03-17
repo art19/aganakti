@@ -33,9 +33,10 @@ Gem::Specification.new do |spec|
   spec.executables   = spec.files.grep(%r{\Aexe/}) { |f| File.basename(f) }
   spec.require_paths = ['lib']
 
-  spec.add_dependency 'activerecord', '>= 5.1'
-  spec.add_dependency 'oj',           '~> 3.11.3'
-  spec.add_dependency 'typhoeus',     '~> 1.4.0'
+  spec.add_dependency 'activerecord',  '>= 5.1'
+  spec.add_dependency 'activesupport', '>= 5.1'
+  spec.add_dependency 'oj',            '~> 3.11.3'
+  spec.add_dependency 'typhoeus',      '~> 1.4.0'
 
   spec.add_development_dependency 'rake',          '~> 13.0'
   spec.add_development_dependency 'rdoc',          '~> 6.3.0' # YARD requirement
