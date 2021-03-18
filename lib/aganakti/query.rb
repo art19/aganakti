@@ -2,6 +2,7 @@
 
 require_relative 'query/building'
 require_relative 'query/delegations'
+require_relative 'query/result_parser'
 require_relative 'query/row_parser'
 
 require 'securerandom'
