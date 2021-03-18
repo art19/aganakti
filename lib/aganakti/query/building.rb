@@ -20,7 +20,7 @@ module Aganakti
           sqlTimeZone: @time_zone,
           useApproximateCountDistinct: @approximate_count_distinct,
           useApproximateTopN: @approximate_top_n
-        }.compact!.freeze
+        }.compact.freeze
       end
 
       ##
@@ -52,7 +52,7 @@ module Aganakti
           parameters: query_parameters,
           resultFormat: 'arrayLines', # This avoids repeating the column names every row
           context: query_context
-        }.compact!.freeze
+        }.compact.freeze
       end
     end
   end
