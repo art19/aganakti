@@ -98,7 +98,7 @@ module Aganakti
 
     # Rather than repeat the same boilerplate over and over, use a template.
     BOOL_SETTING_METHODS.each do |setting|
-      instance_eval <<-RUBY, __FILE__, __LINE__ + 1
+      class_eval <<-RUBY, __FILE__, __LINE__ + 1
         def #{setting}                                                               # def with_approximate_count_distinct
           if executed?                                                               #   if executed?
             raise QueryAlreadyExecutedError, "#{setting} cannot be set because " \   #     raise QueryAlreadyExecutedError, "with_approximate_count_distinct cannot be set because " \
