@@ -28,7 +28,7 @@ module Aganakti
       #
       # @return [Array<Hash>] query parameters
       def query_parameters # rubocop:disable Metrics/CyclomaticComplexity, Metrics/MethodLength
-        params.map do |param|
+        @params.map do |param|
           case param
           when BigDecimal then { type: 'DECIMAL', value: param.to_s('F') }
           when Date       then { type: 'DATE', value: param.strftime('%F') }
