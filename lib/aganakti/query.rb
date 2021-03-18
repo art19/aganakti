@@ -35,7 +35,7 @@ module Aganakti
     # @param client [Aganakti::Client] The client
     # @param sql [String] see {Aganakti::Client#query}
     # @param params [Array] see {Aganakti::Client#query}
-    def initialize(client, sql, *params)
+    def initialize(client, sql, params)
       @client   = client
       @executed = false
       @sql      = sql
