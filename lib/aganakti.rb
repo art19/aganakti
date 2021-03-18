@@ -50,7 +50,9 @@ module Aganakti
   # @option options [Integer] :timeout (0)
   #   How many seconds to wait for a response from the server after connecting, 0 means wait forever
   # @option options [String] :tls_ca_certificate_bundle
-  #   An optional path to the TLS CA certificate bundle to use with this connection
+  #   An optional path to the TLS CA certificate bundle to use with this connection. Your system may
+  #   have such a bundle at +/etc/ssl/certs/ca-certificates.crt+, if your Druid server uses a certificate
+  #   signed by a public authority.
   # @option options [String] :user_agent_prefix
   #   An optional prefix to add to the user agent, like <tt>your-app/1.0 (+http://example.com/)</tt>
   # @return [Aganakti::Client] a client that is ready for querying
