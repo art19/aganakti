@@ -5,6 +5,7 @@ require_relative 'query/delegations'
 require_relative 'query/result_parser'
 require_relative 'query/row_parser'
 
+require 'oj'
 require 'securerandom'
 require 'typhoeus'
 
@@ -66,7 +67,11 @@ module Aganakti
     # @raise [Aganakti::QueryResultUnparseableError] if the query result does not match the format we expect
     # @raise [Aganakti::QueryTimedOutError] if the query timed out before being able to be executed
     def result
-      @result ||= Typhoeus::Request.new(@client.uri, @client.typhoeus_options.merge(method: :post, body: JSON.generate(query_payload))).run.tap do |resp|
+      @result ||= begin
+        payload = Oj.dump(query_payload, mode: :strict)
+
+        resp = Typhoeus::Request.new(@client.uri, @client.typhoeus_options.merge(method: :post, body: payload)).run
+
         ResultParser.validate_response!(resp)
         ResultParser.parse_response(resp).tap do |_|
           @executed = true
