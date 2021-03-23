@@ -2,18 +2,56 @@
 
 RSpec.describe Aganakti::Client do
   describe '.new' do
-    it 'freezes the options'
-    it 'freezes the URI'
-    it 'overrides Accept header'
-    it 'overrides Content-Type header'
-    it 'sets up an instrumenter'
-    it 'works with no options specified'
+    it 'freezes the options' do
+      options = {}
+
+      expect { described_class.new('http://localhost', options) }.to change { options.frozen? }.from(false).to(true)
+    end
+
+    it 'freezes the URI' do
+      uri = String.new('http://localhost')
+
+      expect { described_class.new(uri, {}) }.to change { uri.frozen? }.from(false).to(true)
+    end
+
+    it 'overrides Accept header' do
+      client = described_class.new('http://localhost', headers: { 'Accept' => 'text/xml' })
+
+      expect(client.typhoeus_options[:headers]).to include('Accept' => 'application/json')
+    end
+
+    it 'overrides Content-Type header' do
+      client = described_class.new('http://localhost', headers: { 'Content-Type' => 'text/xml' })
+
+      expect(client.typhoeus_options[:headers]).to include('Content-Type' => 'application/json')
+    end
+
+    it 'sets up an instrumenter' do
+      client = described_class.new('http://localhost', {})
+
+      expect(client.instrumenter).to be_an_instance_of(ActiveSupport::Notifications::Instrumenter)
+    end
+
+    it 'works with no options specified' do
+      expect { described_class.new('http://localhost', {}) }.not_to raise_error
+    end
   end
 
   describe '#escape_identifier' do
-    it "doesn't corrupt a string containing single quotes"
-    it 'escapes a string containing double quotes'
-    it 'passes UTF-8 characters transparently'
+    subject(:client) { described_class.new('http://localhost', {}) }
+
+    it "doesn't corrupt a string containing single quotes" do
+      expect(client.escape_identifier("it's thinking")).to eq("it's thinking")
+    end
+
+    it 'escapes a string containing double quotes' do
+      expect(client.escape_identifier('they said "a column name with double quotes is weird"'))
+        .to eq('they said ""a column name with double quotes is weird""')
+    end
+
+    it 'passes UTF-8 characters transparently' do
+      expect(client.escape_identifier('🍔')).to eq('🍔')
+    end
   end
 
   describe '#escape_literal' do
@@ -63,8 +101,28 @@ RSpec.describe Aganakti::Client do
   end
 
   describe '#query' do
-    it 'assumes your query is valid'
-    it 'supports passing no parameters'
-    it 'supports passing parameters'
+    subject(:client) { described_class.new('http://localhost', {}) }
+
+    before do
+      allow(Aganakti::Query).to receive(:new).once
+    end
+
+    it 'assumes your query is valid' do
+      client.query('not a query')
+
+      expect(Aganakti::Query).to have_received(:new).with(client, 'not a query', []).once
+    end
+
+    it 'supports passing no parameters' do
+      client.query('SELECT foo FROM datasource')
+
+      expect(Aganakti::Query).to have_received(:new).with(client, 'SELECT foo FROM datasource', []).once
+    end
+
+    it 'supports passing parameters' do
+      client.query('SELECT foo FROM datasource WHERE bar = ? AND baz = ?', 42, 'Testing')
+
+      expect(Aganakti::Query).to have_received(:new).with(client, 'SELECT foo FROM datasource WHERE bar = ? AND baz = ?', [42, 'Testing'])
+    end
   end
 end
