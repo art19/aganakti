@@ -67,7 +67,7 @@ module Aganakti
     # @raise [Aganakti::QueryResultUnparseableError] if the query result does not match the format we expect
     # @raise [Aganakti::QueryTimedOutError] if the query timed out before being able to be executed
     def result
-      @result ||= begin
+      @result ||= with_instrumentation do
         payload = Oj.dump(query_payload, mode: :strict)
 
         resp = Typhoeus::Request.new(@client.uri, @client.typhoeus_options.merge(method: :post, body: payload)).run
@@ -143,5 +143,28 @@ module Aganakti
     #   @raise [Aganakti::QueryAlreadyExecutedError] if the query has already been executed
 
     # @!endgroup
+
+    # The above blank line must exist before private below or else YARD incorrectly adds the below
+    # to the group.
+
+    private
+
+    ##
+    # This is a helper that runs the block passed within instrumentation. Since one query = one query
+    # object, it doesn't need any arguments.
+    #
+    # @yieldreturn [*] the block this wraps is called without caring about the return type.
+    def with_instrumentation(&block)
+      # NB: This uses the same attributes as ActiveRecord to make integrating with stuff easier
+      @client.instrumenter.instrument(
+        'sql.aganakti',
+        name:          'Druid SQL',
+        sql:           @sql,
+        binds:         query_parameters.map { |bind| bind[:value] },
+        connection:    @client,
+        query_context: query_context,
+        &block
+      )
+    end
   end
 end
