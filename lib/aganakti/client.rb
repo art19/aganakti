@@ -24,7 +24,7 @@ module Aganakti
     attr_reader :uri
 
     ##
-    # Creates a new client instance. You probably want to use Aganakti.new unless you need to specify your own Typhoeus options.
+    # Creates a new client instance. You probably want to use {Aganakti.new} unless you need to specify your own Typhoeus options.
     #
     # @param uri [String] The URI to the Druid SQL endpoint, with username/password in it
     # @param options [Hash] Options to use with Typhoeus
