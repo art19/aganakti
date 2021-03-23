@@ -1,5 +1,13 @@
 # frozen_string_literal: true
 
+if ENV['COVERAGE']
+  require 'simplecov'
+
+  SimpleCov.start do
+    enable_coverage :branch
+  end
+end
+
 require 'aganakti'
 
 RSpec.configure do |config|
