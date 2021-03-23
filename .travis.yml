@@ -1,5 +1,12 @@
 language: ruby
 cache: bundler
+# Multi-arch testing isn't strictly needed, however, many of our dependencies are compiled, and
+# we need to ensure that they exhibit the expected behavior when we use them
+arch:
+- amd64
+- ppc64le
+- s390x
+- arm64
 rvm:
 - 2.5
 - 2.6
@@ -17,9 +24,10 @@ stages:
 
 jobs:
   include:
-    # Only do coverage in the latest Ruby/Rails
+    # Only do coverage in the latest Ruby/Rails on amd64
     - stage: coverage
-      name: Test Coverage
+      name: Report Test Coverage
+      arch: amd64
       rvm: 3.0
       gemfile: Gemfile.rails61
       env:
