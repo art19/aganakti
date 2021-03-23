@@ -26,10 +26,9 @@ module Aganakti
       ##
       # Builds the query parameters that's included in the query payload.
       #
-      # @param params [Array<BigDecimal, Date, DateTime, Float, Integer, String, Time>] params for the query
       # @return [Array<Hash>] query parameters in Druid's expected syntax
-      def query_parameters(params) # rubocop:disable Metrics/CyclomaticComplexity, Metrics/MethodLength
-        params.map do |param|
+      def query_parameters # rubocop:disable Metrics/CyclomaticComplexity, Metrics/MethodLength
+        @params.map do |param|
           case param
           when BigDecimal then { type: 'DECIMAL', value: param.to_s('F') }
           when Date       then { type: 'DATE', value: param.strftime('%F') }
@@ -50,7 +49,7 @@ module Aganakti
         {
           query:        @sql,
           header:       true,
-          parameters:   query_parameters(@params),
+          parameters:   query_parameters,
           resultFormat: 'arrayLines', # This avoids repeating the column names every row
           context:      query_context
         }.compact.freeze
