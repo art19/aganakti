@@ -26,15 +26,16 @@ module Aganakti
       ##
       # Builds the query parameters that's included in the query payload.
       #
-      # @return [Array<Hash>] query parameters
-      def query_parameters # rubocop:disable Metrics/CyclomaticComplexity, Metrics/MethodLength
-        @params.map do |param|
+      # @param params [Array<BigDecimal, Date, DateTime, Float, Integer, String, Time>] params for the query
+      # @return [Array<Hash>] query parameters in Druid's expected syntax
+      def query_parameters(params) # rubocop:disable Metrics/CyclomaticComplexity, Metrics/MethodLength
+        params.map do |param|
           case param
           when BigDecimal then { type: 'DECIMAL', value: param.to_s('F') }
           when Date       then { type: 'DATE', value: param.strftime('%F') }
           when DateTime   then { type: 'TIMESTAMP', value: param.to_time.utc.strftime('%F %T.%N') }
-          when Float      then { type: 'DOUBLE', value: param.to_s }
-          when Integer    then { type: 'INTEGER', value: param.to_s }
+          when Float      then { type: 'DOUBLE', value: param }
+          when Integer    then { type: 'INTEGER', value: param }
           when Time       then { type: 'TIMESTAMP', value: param.utc.strftime('%F %T.%N') }
           else                 { type: 'VARCHAR', value: param.to_s }
           end
@@ -47,11 +48,11 @@ module Aganakti
       # @return [Hash] the query payload
       def query_payload
         {
-          query: @sql,
-          header: true,
-          parameters: query_parameters,
+          query:        @sql,
+          header:       true,
+          parameters:   query_parameters(@params),
           resultFormat: 'arrayLines', # This avoids repeating the column names every row
-          context: query_context
+          context:      query_context
         }.compact.freeze
       end
     end
