@@ -4,6 +4,7 @@ require 'typhoeus'
 require 'uri'
 
 require_relative 'aganakti/client'
+require_relative 'aganakti/log_subscriber'
 require_relative 'aganakti/version'
 
 ##
