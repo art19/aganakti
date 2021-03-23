@@ -56,6 +56,51 @@ module Aganakti
     end
 
     ##
+    # Escapes a literal like a value you're searching for so that it can be safely interpolated into a query. Do not use this
+    # to escape identifiers like column names or +AS "foo"+ in +SELECT+ lists. This method additionally passes Unicode transparently,
+    # which may or may not work depending on how the intermediate systems like proxies process requests. {#escape_literal_unicode} can
+    # be used to escape in these situations, but beware that Druid currently cannot handle escape sequences outside of the Unicode
+    # Basic Multilingual Plane (e.g., U+0000 to U+FFFF).
+    #
+    # Where possible, it is best practice to use a parameterized query and avoid this method entirely.
+    #
+    # @param str [String] the literal you want to escape
+    # @return [String] the escaped literal
+    # @see https://druid.apache.org/docs/latest/querying/sql.html#identifiers-and-literals Apache Druid: SQL: Identifiers and Literals
+    def escape_literal(str)
+      str.gsub("'", "''")
+    end
+
+    ##
+    # Escapes a literal like a value you're searching for so that it can be safely interpolated into a query, but with Unicode
+    # escaping in case intermediate systems cannot handle UTF-8. Do not use this to escape identifiers like column names or
+    # +AS "foo"+ in +SELECT+ lists. If intermediate systems do support UTF-8 properly, then it would be preferable to use
+    # {#escape_literal} instead as it does not limit you to the Unicode Basic Multilingual Plane (U+0000 to U+FFFF) like this
+    # method does due to Druid limitations. When using a literal escaped using this method, you must prefix the literal with
+    # +U&+ in your query, e.g., +U&'\13d7\13df\13b6\13cd\13d9\13d7'+.
+    #
+    # Where possible, it is best practice to use a parameterized query and avoid this method entirely.
+    #
+    # @param str [String] the literal you want to escape
+    # @return [String] the escaped literal
+    # @raise [Aganakti::IllegalEscapeError] if we cannot escape the string passed in
+    # @see https://druid.apache.org/docs/latest/querying/sql.html#identifiers-and-literals Apache Druid: SQL: Identifiers and Literals
+    def escape_literal_unicode(str)
+      raise IllegalEscapeError, 'passed string must be UTF-8' unless str.encoding == Encoding::UTF_8
+
+      escape_literal(str).chars.map do |char|
+        raise IllegalEscapeError, 'Druid only supports escaping characters in the Unicode Basic Multilingual Plane (U+0000 to U+FFFF)' if char.ord > 0xFFFF
+
+        # characters from 0x00 to 0x7F encode 1:1 to Unicode and do not need to be escaped
+        if char.ord > 0x7F
+          "\\#{format('%04X', char.ord)}"
+        else
+          char
+        end
+      end.join
+    end
+
+    ##
     # Build or perform a query against Druid.
     #
     # @param sql [String]
