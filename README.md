@@ -1,5 +1,7 @@
 # Aganakti (ᎠᎦᎾᎦᏘ) - Ruby client for Apache Druid SQL
 
+[![Maintainability](https://api.codeclimate.com/v1/badges/2e54ebd1fc6ff0b8f12b/maintainability)](https://codeclimate.com/github/art19/aganakti/maintainability) [![Test Coverage](https://api.codeclimate.com/v1/badges/2e54ebd1fc6ff0b8f12b/test_coverage)](https://codeclimate.com/github/art19/aganakti/test_coverage)
+
 Aganakti (ᎠᎦᎾᎦᏘ) is a client for performing queries against Apache Druid SQL and Imply. It is designed to be fast, simple to use, thread safe, support multiple Druid servers, and to work just like `ActiveRecord::Base.exec_query`. Currently, we depend on ActiveRecord for `ActiveRecord::Result`, but there are no other Rails requirements. This allows it to have wide Rails compatibility.
 
 ## Installation
