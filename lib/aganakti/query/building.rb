@@ -16,10 +16,10 @@ module Aganakti
       # @return [Hash] the query context
       def query_context
         {
-          sqlQueryId: @qid,
-          sqlTimeZone: @time_zone,
+          sqlQueryId:                  @qid,
+          sqlTimeZone:                 @time_zone,
           useApproximateCountDistinct: @approximate_count_distinct,
-          useApproximateTopN: @approximate_top_n
+          useApproximateTopN:          @approximate_top_n
         }.compact.freeze
       end
 
