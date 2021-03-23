@@ -98,9 +98,7 @@ module Aganakti
                cainfo:          options[:tls_ca_certificate_bundle],
                connecttimeout:  options[:connect_timeout],
                headers:         {
-                 'Accept' => 'application/json',
                  'Connection' => 'keep-alive',
-                 'Content-Type' => 'application/json',
                  'User-Agent' => user_agent
                },
                tcp_keepalive:   true,

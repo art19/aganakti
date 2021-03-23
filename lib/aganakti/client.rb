@@ -35,6 +35,10 @@ module Aganakti
     # @param uri [String] The URI to the Druid SQL endpoint, with username/password in it
     # @param options [Hash] Options to use with Typhoeus
     def initialize(uri, options)
+      options[:headers] ||= {}
+      options[:headers]['Accept'] = 'application/json'
+      options[:headers]['Content-Type'] = 'application/json'
+
       @instrumenter     = ActiveSupport::Notifications.instrumenter
       @typhoeus_options = options.freeze
       @uri              = uri.freeze
