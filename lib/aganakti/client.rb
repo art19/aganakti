@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require 'active_support/notifications'
+
 require_relative 'query'
 
 module Aganakti
@@ -8,6 +10,11 @@ module Aganakti
   # new client per thread/process (e.g., in a Unicorn after_fork). The client is intended to be constructed by {Aganakti.new}, which abstracts
   # some of the more complicated cURL options. You're welcome to construct this class instead if you need to do something special.
   class Client
+    ##
+    # @api private
+    # @return [ActiveSupport::Notifications::Instrumenter] the ActiveSupport::Notifications instrumenter
+    attr_reader :instrumenter
+
     ##
     # @return [Hash] The options that are passed to Typhoeus
     attr_reader :typhoeus_options
@@ -19,10 +26,11 @@ module Aganakti
     ##
     # Creates a new client instance. You probably want to use Aganakti.new unless you need to specify your own Typhoeus options.
     #
-    # @param uri [String] the URI to the Druid SQL endpoint, with username/password in it
-    # @param typhoeus_options [Hash] options to use with Typhoeus
-    def initialize(uri, typhoeus_options)
-      @typhoeus_options = typhoeus_options.freeze
+    # @param uri [String] The URI to the Druid SQL endpoint, with username/password in it
+    # @param options [Hash] Options to use with Typhoeus
+    def initialize(uri, options)
+      @instrumenter     = ActiveSupport::Notifications.instrumenter
+      @typhoeus_options = options.freeze
       @uri              = uri.freeze
     end
 
