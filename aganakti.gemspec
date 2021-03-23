@@ -43,6 +43,7 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'rdoc',          '~> 6.3.0' # YARD requirement
   spec.add_development_dependency 'redcarpet',     '~> 3.5.1' # YARD requirement
   spec.add_development_dependency 'rspec',         '~> 3.0'
+  spec.add_development_dependency 'rspec-mocks',   '~> 3.10'
   spec.add_development_dependency 'rubocop',       '~> 1.7'
   spec.add_development_dependency 'rubocop-rake',  '~> 0.5.1'
   spec.add_development_dependency 'rubocop-rspec', '~> 2.2.0'
