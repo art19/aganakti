@@ -7,6 +7,9 @@ AllCops:
 Layout/EndOfLine:
   EnforcedStyle: lf
 
+Layout/HashAlignment:
+  EnforcedColonStyle: table
+
 Layout/LineLength:
   Max: 160
 
