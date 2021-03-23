@@ -90,16 +90,16 @@ module Aganakti
     # Finally construct our client
     Client.new uri,
                accept_encoding: '', # allow libcurl to determine its supported compression
-               cainfo: options[:tls_ca_certificate_bundle],
-               connecttimeout: options[:connect_timeout],
-               headers: {
+               cainfo:          options[:tls_ca_certificate_bundle],
+               connecttimeout:  options[:connect_timeout],
+               headers:         {
                  'Accept' => 'application/json',
                  'Connection' => 'keep-alive',
                  'Content-Type' => 'application/json',
                  'User-Agent' => user_agent
                },
-               tcp_keepalive: true,
-               timeout: options[:timeout]
+               tcp_keepalive:   true,
+               timeout:         options[:timeout]
   end
   module_function :new
 end
