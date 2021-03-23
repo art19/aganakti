@@ -19,6 +19,10 @@ module Aganakti
   class ConfigurationError < Error; end
 
   ##
+  # We cannot escape the requested string
+  class IllegalEscapeError < Error; end
+
+  ##
   # A query has already executed, but an operation was attempted which can only be
   # performed before the query executes.
   class QueryAlreadyExecutedError < Error; end
