@@ -203,7 +203,7 @@ RSpec.describe Aganakti::Query do
       end
 
       it 'is properly identified as existing via #respond_to?' do
-        expect(query.respond_to?(del.to_sym)).to be(true)
+        expect(query).to respond_to(del.to_sym)
       end
     end
   end
