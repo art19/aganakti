@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require 'active_record/gem_version'
 require 'active_support/core_ext/module/delegation'
 
 module Aganakti
@@ -19,7 +20,6 @@ module Aganakti
       delegate :columns, to: :result
       delegate :column_types, to: :result
       delegate :each, to: :result
-      delegate :includes_column?, to: :result
       delegate :last, to: :result
       delegate :length, to: :result
       delegate :map, to: :result
@@ -27,6 +27,8 @@ module Aganakti
       delegate :rows, to: :result
       delegate :to_ary, to: :result
       delegate :to_a, to: :result
+
+      delegate :includes_column?, to: :result if ActiveRecord::VERSION::MAJOR >= 6
     end
   end
 end
