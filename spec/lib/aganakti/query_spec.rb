@@ -1,6 +1,16 @@
 # frozen_string_literal: true
 
+require 'stub_server'
+
 RSpec.describe Aganakti::Query do
+  def with_stub_server(replies)
+    StubServer.open(0, replies) do |server|
+      server.wait
+
+      yield server.instance_variable_get(:@server)[:Port]
+    end
+  end
+
   shared_context 'with a stubbed request', :stubbed do
     subject(:query) { described_class.new(client, 'SELECT 1', []) }
 
@@ -31,7 +41,9 @@ RSpec.describe Aganakti::Query do
     end
   end
 
-  describe '.new'
+  describe '.new' do
+    pending
+  end
 
   describe '#executed?', :stubbed do
     context 'with a query that #result has been called on' do
@@ -47,20 +59,161 @@ RSpec.describe Aganakti::Query do
     end
   end
 
-  describe '#in_time_zone'
+  describe '#in_time_zone' do
+    pending
+  end
 
   describe '#result' do
+    # this returns a lambda to allow the client to be built after the server starts
+    subject(:query) do
+      ->(client) { described_class.new(client, 'SELECT server_type, COUNT(*) FROM sys.servers GROUP BY server_type ORDER BY 2 DESC', []) }
+    end
+
+    let(:error_response) do
+      '{"error":"Plan validation failed","errorMessage":"org.apache.calcite.runtime.CalciteContextException: At line 1, column 77: Ordinal out of range",' \
+      '"errorClass":"org.apache.calcite.tools.ValidationException","host":null}'
+    end
+
+    let(:good_response) do
+      <<~RESPONSE
+        ["server_type","EXPR$1"]
+        ["peon",8]
+        ["middle_manager",4]
+        ["historical",4]
+        ["router",1]
+        ["coordinator",1]
+        ["overlord",1]
+        ["broker",1]
+
+      RESPONSE
+    end
+
+    let(:good_result) do
+      [
+        { 'server_type' => 'peon', 'EXPR$1' => 8 },
+        { 'server_type' => 'middle_manager', 'EXPR$1' => 4 },
+        { 'server_type' => 'historical', 'EXPR$1' => 4 },
+        { 'server_type' => 'router', 'EXPR$1' => 1 },
+        { 'server_type' => 'coordinator', 'EXPR$1' => 1 },
+        { 'server_type' => 'overlord', 'EXPR$1' => 1 },
+        { 'server_type' => 'broker', 'EXPR$1' => 1 }
+      ]
+    end
+
+    let(:timeout_response) do
+      # This returns [rd, wr], which are both open. the reply should use the read stream,
+      # and after a delay write to and close the write stream
+      IO.pipe
+    end
+
+    let(:truncated_response) do
+      <<~RESPONSE
+        ["server_type","EXPR$1"]
+        ["peon",8]
+        ["middle_manager",4]
+        ["historical",4]
+        ["router",1]
+        ["coordinator",1]
+      RESPONSE
+    end
+
+    # Standard response headers that all requests return
+    let(:response_headers) do
+      {
+        'Content-Type' => 'application/json'
+      }
+    end
+
+    # Replies to set up for stub_server
+    let(:replies) do
+      {
+        '/good' => [200, response_headers, [good_response]],
+        '/error' => [400, response_headers, [error_response]],
+        '/timeout' => [200, response_headers, timeout_response.first],
+        '/truncated' => [200, response_headers, [truncated_response]]
+      }
+    end
+
     context 'when calling once' do
-      it "doesn't mark the query as executed when there is an error"
-      it 'executes the query'
-      it 'handles execution errors'
-      it 'handles query timeouts'
-      it 'handles truncated responses'
-      it 'parses query results correctly'
+      it "doesn't mark the query as executed when there is an error" do
+        with_stub_server(replies) do |port|
+          client     = Aganakti.new("http://localhost:#{port}/error")
+          live_query = query.call(client)
+
+          expect do
+            live_query.to_a
+          rescue Aganakti::QueryError
+            nil
+          end.not_to change { live_query.executed? }.from(false)
+        end
+      end
+
+      it 'executes the query and parses the results correctly' do
+        with_stub_server(replies) do |port|
+          client     = Aganakti.new("http://localhost:#{port}/good")
+          live_query = query.call(client)
+
+          expect(live_query.to_a).to eq(good_result)
+        end
+      end
+
+      it 'handles execution errors' do
+        with_stub_server(replies) do |port|
+          client     = Aganakti.new("http://localhost:#{port}/error")
+          live_query = query.call(client)
+
+          expect { live_query.to_a }.to raise_error(Aganakti::QueryError, 'Plan validation failed: org.apache.calcite.runtime.CalciteContextException: ' \
+                                                                          'At line 1, column 77: Ordinal out of range')
+        end
+      end
+
+      it 'handles query timeouts' do
+        with_stub_server(replies) do |port|
+          client = Aganakti.new("http://localhost:#{port}/timeout", timeout: 0.1)
+
+          writer_thread = Thread.new do
+            # actually make the IO return data
+            sleep 1
+
+            wr = timeout_response.last
+            wr.write(good_response)
+            wr.close
+          end
+
+          expect do
+            query_thread = Thread.new { query.call(client).to_a }
+            query_thread.report_on_exception = false
+            query_thread.value
+          end.to raise_error(Aganakti::QueryTimedOutError)
+
+          writer_thread.join # so the spec doesn't hang
+        end
+      end
+
+      it 'handles truncated responses' do
+        with_stub_server(replies) do |port|
+          client     = Aganakti.new("http://localhost:#{port}/truncated")
+          live_query = query.call(client)
+
+          expect { live_query.to_a }.to raise_error(Aganakti::QueryResultTruncatedError)
+        end
+      end
     end
 
     context 'when calling more than once' do
-      it 'executes the query once and returns cached results otherwise'
+      it 'executes the query once and returns cached results otherwise' do
+        live_query = nil
+
+        with_stub_server(replies) do |port|
+          client     = Aganakti.new("http://localhost:#{port}/good")
+          live_query = query.call(client)
+
+          live_query.to_a # run once
+        end
+
+        # server is now down, verify our data is cached
+        expect(live_query.to_a).to eq(good_result)
+      end
     end
   end
 
