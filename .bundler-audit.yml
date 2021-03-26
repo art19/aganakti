@@ -1,0 +1,4 @@
+---
+ignore:
+  - CVE-2020-8165  # activesupport 5.1: Potentially unintended unmarshalling of user-provided objects in MemCacheStore and RedisCacheStore
+  - CVE-2021-22880 # activerecord 5.1: Possible DoS Vulnerability in Active Record PostgreSQL adapter
