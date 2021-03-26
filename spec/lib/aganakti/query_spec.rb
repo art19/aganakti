@@ -1,22 +1,24 @@
 # frozen_string_literal: true
 
 RSpec.describe Aganakti::Query do
-  subject(:query) { described_class.new(client, 'SELECT 1', []) }
+  shared_context 'with a stubbed request', :stubbed do
+    subject(:query) { described_class.new(client, 'SELECT 1', []) }
 
-  let(:client)           { instance_double(Aganakti::Client, instrumenter: instrumenter, typhoeus_options: typhoeus_options, uri: uri) }
-  let(:instrumenter)     { instance_double(ActiveSupport::Notifications::Instrumenter) }
-  let(:result)           { instance_double(ActiveRecord::Result) }
-  let(:request)          { instance_double(Typhoeus::Request) }
-  let(:response)         { instance_double(Typhoeus::Response) }
-  let(:typhoeus_options) { { headers: { 'Accept' => 'application/json', 'Content-Type' => 'application/json' } } }
-  let(:uri)              { 'http://localhost' }
+    let(:client)           { instance_double(Aganakti::Client, instrumenter: instrumenter, typhoeus_options: typhoeus_options, uri: uri) }
+    let(:instrumenter)     { instance_double(ActiveSupport::Notifications::Instrumenter) }
+    let(:result)           { instance_double(ActiveRecord::Result) }
+    let(:request)          { instance_double(Typhoeus::Request) }
+    let(:response)         { instance_double(Typhoeus::Response) }
+    let(:typhoeus_options) { { headers: { 'Accept' => 'application/json', 'Content-Type' => 'application/json' } } }
+    let(:uri)              { 'http://localhost' }
 
-  before do
-    allow(Aganakti::Query::ResultParser).to receive(:parse_response).and_return(result)
-    allow(Aganakti::Query::ResultParser).to receive(:validate_response!)
-    allow(Typhoeus::Request).to receive(:new).and_return(request)
-    allow(instrumenter).to receive(:instrument).and_yield
-    allow(request).to receive(:run).and_return(response)
+    before do
+      allow(Aganakti::Query::ResultParser).to receive(:parse_response).and_return(result)
+      allow(Aganakti::Query::ResultParser).to receive(:validate_response!)
+      allow(Typhoeus::Request).to receive(:new).and_return(request)
+      allow(instrumenter).to receive(:instrument).and_yield
+      allow(request).to receive(:run).and_return(response)
+    end
   end
 
   describe '::BOOL_SETTING_METHODS' do
@@ -31,13 +33,17 @@ RSpec.describe Aganakti::Query do
 
   describe '.new'
 
-  describe '#executed?' do
+  describe '#executed?', :stubbed do
     context 'with a query that #result has been called on' do
-      it 'returns true'
+      before do
+        query.result
+      end
+
+      it('returns true') { expect(query.executed?).to be true }
     end
 
     context 'with a query that #result has never been called on' do
-      it 'returns false'
+      it('returns false') { expect(query.executed?).to be false }
     end
   end
 
@@ -58,7 +64,7 @@ RSpec.describe Aganakti::Query do
     end
   end
 
-  describe '#with_approximate_count_distinct' do
+  describe '#with_approximate_count_distinct', :stubbed do
     before do
       allow(Oj).to receive(:dump).and_call_original.once
     end
@@ -120,7 +126,7 @@ RSpec.describe Aganakti::Query do
     end
   end
 
-  describe '#with_approximate_top_n' do
+  describe '#with_approximate_top_n', :stubbed do
     before do
       allow(Oj).to receive(:dump).and_call_original.once
     end
@@ -182,12 +188,132 @@ RSpec.describe Aganakti::Query do
     end
   end
 
-  describe '#without_approximate_count_distinct'
+  describe '#without_approximate_count_distinct', :stubbed do
+    before do
+      allow(Oj).to receive(:dump).and_call_original.once
+    end
 
-  describe '#without_approximate_top_n'
+    context 'when specified' do
+      it "doesn't interact with other flags" do
+        query.without_approximate_count_distinct.in_time_zone('Foo/Bar').with_approximate_top_n.result
+
+        expect(Oj).to have_received(:dump).with(
+          hash_including(
+            context: hash_including(
+              sqlTimeZone:        'Foo/Bar',
+              useApproximateTopN: true
+            )
+          ),
+          mode: :strict
+        )
+      end
+
+      it 'sets useApproximateCountDistinct to false in the query context' do
+        query.without_approximate_count_distinct.result
+
+        expect(Oj).to have_received(:dump).with(
+          hash_including(
+            context: hash_including(
+              useApproximateCountDistinct: false
+            )
+          ),
+          mode: :strict
+        )
+      end
+    end
+
+    context 'when not specified' do
+      it "doesn't interact with other flags" do
+        query.in_time_zone('Foo/Bar').without_approximate_top_n.result
+
+        expect(Oj).to have_received(:dump).with(
+          hash_including(
+            context: hash_including(
+              sqlTimeZone:        'Foo/Bar',
+              useApproximateTopN: false
+            )
+          ),
+          mode: :strict
+        )
+      end
+
+      it "doesn't set useApproximateCountDistinct in the query context" do
+        query.result
+
+        expect(Oj).to have_received(:dump).with(
+          hash_including(
+            context: hash_excluding(:useApproximateCountDistinct)
+          ),
+          mode: :strict
+        )
+      end
+    end
+  end
+
+  describe '#without_approximate_top_n', :stubbed do
+    before do
+      allow(Oj).to receive(:dump).and_call_original.once
+    end
+
+    context 'when specified' do
+      it "doesn't interact with other flags" do
+        query.without_approximate_top_n.in_time_zone('Foo/Bar').with_approximate_count_distinct.result
+
+        expect(Oj).to have_received(:dump).with(
+          hash_including(
+            context: hash_including(
+              sqlTimeZone:                 'Foo/Bar',
+              useApproximateCountDistinct: true
+            )
+          ),
+          mode: :strict
+        )
+      end
+
+      it 'sets useApproximateTopN to false in the query context' do
+        query.without_approximate_top_n.result
+
+        expect(Oj).to have_received(:dump).with(
+          hash_including(
+            context: hash_including(
+              useApproximateTopN: false
+            )
+          ),
+          mode: :strict
+        )
+      end
+    end
+
+    context 'when not specified' do
+      it "doesn't interact with other flags" do
+        query.in_time_zone('Foo/Bar').without_approximate_count_distinct.result
+
+        expect(Oj).to have_received(:dump).with(
+          hash_including(
+            context: hash_including(
+              sqlTimeZone:                 'Foo/Bar',
+              useApproximateCountDistinct: false
+            )
+          ),
+          mode: :strict
+        )
+      end
+
+      it "doesn't set useApproximateTopN in the query context" do
+        query.result
+
+        expect(Oj).to have_received(:dump).with(
+          hash_including(
+            context: hash_excluding(:useApproximateTopN)
+          ),
+          mode: :strict
+        )
+      end
+    end
+  end
 
   %w[[] columns column_types each includes_column? last length map empty? rows to_ary to_a].each do |del|
-    describe "##{del}" do
+    describe "##{del}", :stubbed do
       before do
         allow(result).to receive(del.to_sym).once
       end
