@@ -51,5 +51,6 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'simplecov',     '~> 0.21.2'
   spec.add_development_dependency 'solargraph',    '~> 0.40.4'
   spec.add_development_dependency 'stub_server',   '~> 0.5.0'
+  spec.add_development_dependency 'webrick',       '~> 1.7.0'
   spec.add_development_dependency 'yard',          '~> 0.9.26'
 end
