@@ -18,6 +18,11 @@ gemfile:
 - Gemfile.rails60
 - Gemfile.rails61
 
+addons:
+  apt:
+    packages:
+    - libpthread-stubs0-dev
+
 stages:
   - test
   - coverage
