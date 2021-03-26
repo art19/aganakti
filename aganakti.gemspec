@@ -39,6 +39,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'oj',              '~> 3.11.3'
   spec.add_dependency 'typhoeus',        '~> 1.4.0'
 
+  spec.add_development_dependency 'bundler-audit', '~> 0.8.0'
   spec.add_development_dependency 'rake',          '~> 13.0'
   spec.add_development_dependency 'rdoc',          '~> 6.3.0' # YARD requirement
   spec.add_development_dependency 'redcarpet',     '~> 3.5.1' # YARD requirement
