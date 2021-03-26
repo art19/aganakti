@@ -63,6 +63,36 @@ RSpec.describe Aganakti::Query do
     pending
   end
 
+  describe '#includes_column?', :stubbed do
+    if ActiveRecord::VERSION::MAJOR >= 6
+      context 'when running using ActiveRecord >= 6' do
+        before do
+          allow(result).to receive(:includes_column?).once
+        end
+
+        it 'delegates to result#includes_column?' do
+          query.public_send(:includes_column?, 'dummy')
+
+          expect(result).to have_received(:includes_column?).once
+        end
+
+        it 'is properly identified as existing via #respond_to?' do
+          expect(query).to respond_to(:includes_column?)
+        end
+      end
+    else
+      context 'when running using ActiveRecord < 6' do
+        it "doesn't work" do
+          expect { query.includes_column?('dummy') }.to raise_error(NoMethodError)
+        end
+
+        it 'is properly identified as missing via #respond_to?' do
+          expect(query).not_to respond_to(:includes_column?)
+        end
+      end
+    end
+  end
+
   describe '#result' do
     # this returns a lambda to allow the client to be built after the server starts
     subject(:query) do
@@ -465,14 +495,14 @@ RSpec.describe Aganakti::Query do
     end
   end
 
-  %w[[] columns column_types each includes_column? last length map empty? rows to_ary to_a].each do |del|
+  %w[[] columns column_types each last length map empty? rows to_ary to_a].each do |del|
     describe "##{del}", :stubbed do
       before do
         allow(result).to receive(del.to_sym).once
       end
 
       it "delegates to result##{del}" do
-        if ['[]', 'includes_column?'].include?(del)
+        if del == '[]'
           query.public_send(del.to_sym, 'dummy')
         else
           query.public_send(del.to_sym)
