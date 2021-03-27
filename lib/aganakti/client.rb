@@ -107,8 +107,8 @@ module Aganakti
     #   The SQL query to execute, which can possibly contain +?+ where you want to parameterize (like Rails)
     # @param params [Array<BigDecimal, Date, DateTime, Float, Integer, String, Time>]
     #   Optional parameters for the query. The type of the parameter (BigDecimal, String, etc.) determines how it is
-    #   interpreted by Druid. Beware! This library handles decimal types with care, but Druid treats decimal types as
-    #   floating point, so not accounting for this may result in unexpected behavior.
+    #   interpreted by Druid. Beware! Druid treats decimal types as floating point, so not accounting for this may result
+    #   in unexpected behavior.
     # @return [Aganakti::Query]
     #   The query instance, which can be operated on as if it were an +ActiveRecord::Result+, or additional modifiers can
     #   be added as needed.
