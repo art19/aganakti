@@ -59,8 +59,58 @@ RSpec.describe Aganakti::Query do
     end
   end
 
-  describe '#in_time_zone' do
-    pending
+  describe '#in_time_zone', :stubbed do
+    before do
+      allow(Oj).to receive(:dump).and_call_original.once
+    end
+
+    context 'when specified' do
+      it "doesn't interact with other flags" do
+        query.in_time_zone('Foo/Bar').without_approximate_count_distinct.result
+
+        expect(Oj).to have_received(:dump).with(
+          hash_including(
+            context: hash_including(useApproximateCountDistinct: false)
+          ),
+          mode: :strict
+        )
+      end
+
+      it 'sets sqlTimeZone to the specified value in the query context' do
+        query.in_time_zone('Foo/Bar').result
+
+        expect(Oj).to have_received(:dump).with(
+          hash_including(
+            context: hash_including(sqlTimeZone: 'Foo/Bar')
+          ),
+          mode: :strict
+        )
+      end
+    end
+
+    context 'when not specified' do
+      it "doesn't interact with other flags" do
+        query.without_approximate_count_distinct.result
+
+        expect(Oj).to have_received(:dump).with(
+          hash_including(
+            context: hash_including(useApproximateCountDistinct: false)
+          ),
+          mode: :strict
+        )
+      end
+
+      it "doesn't set sqlTimeZone in the query context" do
+        query.result
+
+        expect(Oj).to have_received(:dump).with(
+          hash_including(
+            context: hash_excluding(:sqlTimeZone)
+          ),
+          mode: :strict
+        )
+      end
+    end
   end
 
   describe '#includes_column?', :stubbed do
