@@ -42,10 +42,16 @@ module Aganakti
       # @param line [String] a JSON line
       # @return [Array<String>] the parsed row
       # @raise [Aganakti::QueryResultUnparseableError] if the line couldn't be parsed
+      # @raise [Oj::ParseError] if the line couldn't be parsed at an even lower level
       def parse(line)
         ::Oj.saj_parse(self, line)
 
         row || []
+      rescue StandardError => e
+        # On error, reset the row
+        @row = nil
+
+        raise e
       end
 
       # @!group Saj Parser Callbacks
