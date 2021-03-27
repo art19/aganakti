@@ -28,7 +28,9 @@ module Aganakti
       delegate :to_ary, to: :result
       delegate :to_a, to: :result
 
+      # :nocov:
       delegate :includes_column?, to: :result if ActiveRecord::VERSION::MAJOR >= 6
+      # :nocov:
     end
   end
 end
