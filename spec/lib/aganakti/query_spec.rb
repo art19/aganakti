@@ -247,6 +247,8 @@ RSpec.describe Aganakti::Query do
       {
         '/good' => [200, response_headers, [good_response]],
         '/error' => [400, response_headers, [error_response]],
+        '/error2' => [500, {}, ['Internal Server Error']],
+        '/error3' => [500, response_headers, ['{"problem":true}']],
         '/timeout' => [200, response_headers, timeout_response.first],
         '/truncated' => [200, response_headers, [truncated_response]]
       }
@@ -272,6 +274,35 @@ RSpec.describe Aganakti::Query do
           live_query = query.call(client)
 
           expect(live_query.to_a).to eq(good_result)
+        end
+      end
+
+      it 'handles cURL errors' do
+        with_stub_server(replies) do |port|
+          client     = Aganakti.new("https://localhost:#{port}/error")
+          live_query = query.call(client)
+
+          expect { live_query.to_a }.to raise_error(Aganakti::QueryError, 'cURL error 35: SSL connect error')
+        end
+      end
+
+      it 'handles errors which are unparseable and not JSON' do
+        with_stub_server(replies) do |port|
+          client     = Aganakti.new("http://localhost:#{port}/error2")
+          live_query = query.call(client)
+
+          expect { live_query.to_a }.to raise_error(Aganakti::QueryError, "An error occurred, but the server's response was unparseable: " \
+                                                                          'Internal Server Error')
+        end
+      end
+
+      it 'handles errors which are unparseable but still JSON' do
+        with_stub_server(replies) do |port|
+          client     = Aganakti.new("http://localhost:#{port}/error3")
+          live_query = query.call(client)
+
+          expect { live_query.to_a }.to raise_error(Aganakti::QueryError, "An error occurred, but the server's response was unparseable: " \
+                                                                          '{"problem":true}')
         end
       end
 
