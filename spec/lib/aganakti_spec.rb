@@ -22,4 +22,46 @@ RSpec.describe Aganakti do
       end
     end
   end
+
+  describe '.new' do
+    context 'with a FTP URI' do
+      pending
+    end
+
+    context 'with a HTTP URI' do
+      pending
+    end
+
+    context 'with a HTTPS URI' do
+      pending
+    end
+
+    context 'with a specified but missing CA bundle' do
+      pending
+    end
+
+    context 'with a specified but unreadable CA bundle' do
+      pending
+    end
+
+    context "with a specified CA bundle but it's a directory" do
+      pending
+    end
+
+    context 'with a specified CA bundle that is correct' do
+      pending
+    end
+
+    context 'with a specified user agent prefix' do
+      pending
+    end
+
+    context 'with credentials specified in a HTTP URI but without setting the :insecure_plaintext_login option' do
+      pending
+    end
+
+    context 'with credentials specified in a HTTP URI and setting the :insecure_plaintext_login option' do
+      pending
+    end
+  end
 end
