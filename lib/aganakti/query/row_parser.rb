@@ -19,6 +19,8 @@ module Aganakti
     #
     # @example
     #   RowParser.parse(json_data)
+    #
+    # @private
     class RowParser < ::Oj::Saj
       ##
       # @return [Array<String>] The contents of the row
@@ -123,5 +125,6 @@ module Aganakti
 
       # @!endgroup
     end
+    private_constant :RowParser
   end
 end

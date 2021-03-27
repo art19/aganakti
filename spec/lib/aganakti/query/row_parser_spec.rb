@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
-RSpec.describe Aganakti::Query::RowParser do
+RSpec.describe 'Aganakti::Query::RowParser' do # NB: using a string here because it's a private constant
+  let!(:described_class) { Aganakti::Query.const_get(:RowParser) }
+
   describe '.parse' do
     before do
       allow(Oj).to receive(:saj_parse)
