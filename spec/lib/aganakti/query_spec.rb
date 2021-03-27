@@ -149,6 +149,10 @@ RSpec.describe Aganakti::Query do
         )
       end
     end
+
+    context 'when the query was already executed' do
+      pending
+    end
   end
 
   describe '#includes_column?', :stubbed do
@@ -426,6 +430,10 @@ RSpec.describe Aganakti::Query do
         )
       end
     end
+
+    context 'when the query was already executed' do
+      pending
+    end
   end
 
   describe '#with_approximate_top_n', :stubbed do
@@ -487,6 +495,10 @@ RSpec.describe Aganakti::Query do
           mode: :strict
         )
       end
+    end
+
+    context 'when the query was already executed' do
+      pending
     end
   end
 
@@ -550,6 +562,10 @@ RSpec.describe Aganakti::Query do
         )
       end
     end
+
+    context 'when the query was already executed' do
+      pending
+    end
   end
 
   describe '#without_approximate_top_n', :stubbed do
@@ -611,6 +627,10 @@ RSpec.describe Aganakti::Query do
           mode: :strict
         )
       end
+    end
+
+    context 'when the query was already executed' do
+      pending
     end
   end
 
