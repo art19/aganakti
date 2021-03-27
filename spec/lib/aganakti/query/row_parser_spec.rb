@@ -21,7 +21,28 @@ RSpec.describe 'Aganakti::Query::RowParser' do # NB: using a string here because
   describe '#parse' do
     context 'with invalid JSON' do
       let(:doc) do
-        '[ funny: 0, { json: -1 } ]'
+        '} [ funny: 0, { json: -1 } ]'
+      end
+
+      it 'has nothing in #row' do
+        parser.parse(doc)
+      rescue StandardError
+        nil
+      ensure
+        expect(parser.row).to be_nil
+      end
+
+      it 'raises an Oj::ParseError' do
+        expect { parser.parse(doc) }.to raise_error(Oj::ParseError, /invalid format/)
+      end
+    end
+
+    context 'with two otherwise valid JSON documents' do
+      let(:doc) do
+        <<~DOC
+          ["a nice", "happy", "row", 13.12, true, 1.2345e6, 5432]
+          ["a nice", "happy", "row", 13.12, true, 9.8765e6, 321]
+        DOC
       end
 
       it 'has nothing in #row' do
