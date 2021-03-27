@@ -63,10 +63,11 @@ module Aganakti
       #
       # @api private
       # @param value [String] the value to add
-      # @param _key [*] the key, if this weren't an array
+      # @param key [*] the key, if this weren't an array
       # @raise [Aganakti::QueryResultUnparseableError]
       #   if we encounter a value before the array was initialized, or the array is frozen
-      def add_value(value, _key)
+      def add_value(value, key)
+        raise QueryResultUnparseableError, 'Encountered unexpected key for a value' unless key.nil?
         raise QueryResultUnparseableError, 'Encountered value before array start' if @row.nil?
         raise QueryResultUnparseableError, 'Row was already finished' if @row.frozen?
 
