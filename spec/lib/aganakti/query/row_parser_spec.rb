@@ -37,19 +37,32 @@ RSpec.describe 'Aganakti::Query::RowParser' do # NB: using a string here because
 
   describe '#array_end' do
     context 'when called after array_start and without a key' do
-      pending
+      it 'freezes the row' do
+        parser.array_start(nil)
+
+        expect { parser.array_end(nil) }.to change { parser.row.frozen? }.from(false).to(true)
+      end
     end
 
     context 'when called after it was already called' do
-      pending
+      it 'raises Aganakti::QueryResultUnparseableError' do
+        parser.array_start(nil)
+        parser.array_end(nil)
+
+        expect { parser.array_end(nil) }.to raise_error(Aganakti::QueryResultUnparseableError, 'Row was already finished')
+      end
     end
 
     context 'when called before array_start was called' do
-      pending
+      it 'raises Aganakti::QueryResultUnparseableError' do
+        expect { parser.array_end(nil) }.to raise_error(Aganakti::QueryResultUnparseableError, 'Row was already finished')
+      end
     end
 
     context 'when called with a key' do
-      pending
+      it 'always raises Aganakti::QueryResultUnparseableError' do
+        expect { parser.array_end('boom') }.to raise_error(Aganakti::QueryResultUnparseableError, 'Encountered unexpected key for an array')
+      end
     end
   end
 
