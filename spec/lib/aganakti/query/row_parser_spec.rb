@@ -68,15 +68,23 @@ RSpec.describe 'Aganakti::Query::RowParser' do # NB: using a string here because
 
   describe '#array_start' do
     context 'when called after it was already called' do
-      pending
+      it 'raises Aganakti::QueryResultUnparseableError' do
+        parser.array_start(nil)
+
+        expect { parser.array_start(nil) }.to raise_error(Aganakti::QueryResultUnparseableError, 'Row was already initialized')
+      end
     end
 
     context 'when called without a key and without already being called' do
-      pending
+      it 'initializes the row' do
+        expect { parser.array_start(nil) }.to change(parser, :row).from(nil).to([])
+      end
     end
 
     context 'when called with a key' do
-      pending
+      it 'always raises Aganakti::QueryResultUnparseableError' do
+        expect { parser.array_start('boom') }.to raise_error(Aganakti::QueryResultUnparseableError, 'Encountered unexpected key for an array')
+      end
     end
   end
 
