@@ -23,8 +23,8 @@ RSpec.describe Aganakti::Query do
     let(:uri)              { 'http://localhost' }
 
     before do
-      allow(Aganakti::Query::ResultParser).to receive(:parse_response).and_return(result)
-      allow(Aganakti::Query::ResultParser).to receive(:validate_response!)
+      allow(described_class.const_get(:ResultParser)).to receive(:parse_response).and_return(result)
+      allow(described_class.const_get(:ResultParser)).to receive(:validate_response!)
       allow(Typhoeus::Request).to receive(:new).and_return(request)
       allow(instrumenter).to receive(:instrument).and_yield
       allow(request).to receive(:run).and_return(response)

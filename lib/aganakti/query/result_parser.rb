@@ -8,9 +8,9 @@ module Aganakti
   class Query
     ##
     # Provides methods for parsing a query result response. Called by
-    # {Aganakti::Query}; you should not need to use this directly.
+    # {Aganakti::Query}; you should not use this directly.
     #
-    # @api private
+    # @private
     class ResultParser
       class << self
         ##
@@ -71,5 +71,6 @@ module Aganakti
         end
       end
     end
+    private_constant :ResultParser
   end
 end
