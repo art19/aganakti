@@ -41,8 +41,46 @@ RSpec.describe Aganakti::Query do
     end
   end
 
-  describe '.new' do
-    pending
+  describe '.new', :stubbed do
+    let(:uuid) { '24f65557-b6e9-4d0c-8962-3bfe711581f5' }
+
+    before do
+      allow(Oj).to receive(:dump).and_call_original.once
+      allow(SecureRandom).to receive(:uuid).and_return(uuid)
+    end
+
+    it "ensures useApproximateCountDistinct isn't passed in the query context by default" do
+      query.result
+
+      expect(Oj).to have_received(:dump).with(
+        hash_including(
+          context: hash_excluding(:useApproximateCountDistinct)
+        ),
+        mode: :strict
+      )
+    end
+
+    it "ensures useApproximateTopN isn't passed in the query context by default" do
+      query.result
+
+      expect(Oj).to have_received(:dump).with(
+        hash_including(
+          context: hash_excluding(:useApproximateTopN)
+        ),
+        mode: :strict
+      )
+    end
+
+    it 'generates a random query UUID' do
+      query.result
+
+      expect(Oj).to have_received(:dump).with(
+        hash_including(
+          context: hash_including(sqlQueryId: uuid)
+        ),
+        mode: :strict
+      )
+    end
   end
 
   describe '#executed?', :stubbed do
