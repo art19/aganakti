@@ -24,6 +24,10 @@ RSpec.describe Aganakti do
   end
 
   describe '.new' do
+    context 'with an invalid URI' do
+      pending
+    end
+
     context 'with a FTP URI' do
       pending
     end
