@@ -29,6 +29,10 @@ RSpec.describe 'Aganakti::Query::RowParser' do # NB: using a string here because
     context 'when called after receiving an array start but before receiving an array end' do
       pending
     end
+
+    context 'when called with a key' do
+      pending
+    end
   end
 
   describe '#array_end' do
