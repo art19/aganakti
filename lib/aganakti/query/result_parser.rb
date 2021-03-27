@@ -56,13 +56,13 @@ module Aganakti
         # @param body [String] the response body with errors inside
         # @return [String] the error message
         def parse_query_error(body)
-          error_msg = nil
-
           begin
             error_info = Oj.load(body, mode: :strict)
 
             error_msg_components = [error_info['error'], error_info['errorMessage']].compact
             error_msg = error_msg_components.join(': ') unless error_msg_components.empty?
+          rescue Oj::ParseError
+            nil
           ensure
             error_msg ||= "An error occurred, but the server's response was unparseable: #{body}"
           end
