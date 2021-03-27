@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 RSpec.describe 'Aganakti::Query::RowParser' do # NB: using a string here because it's a private constant
+  subject(:parser) { described_class.new }
+
   let!(:described_class) { Aganakti::Query.const_get(:RowParser) }
 
   describe '.parse' do
@@ -15,9 +17,8 @@ RSpec.describe 'Aganakti::Query::RowParser' do # NB: using a string here because
     end
   end
 
-  describe '#parse' do
-    subject(:parser) { described_class.new }
 
+  describe '#parse' do
     context 'with invalid JSON' do
       let(:doc) do
         '[ funny: 0, { json: -1 } ]'
