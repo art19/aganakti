@@ -17,6 +17,17 @@ RSpec.describe 'Aganakti::Query::RowParser' do # NB: using a string here because
     end
   end
 
+  describe '#hash_end' do
+    it 'always raises Aganakti::QueryResultUnparseableError' do
+      expect { parser.hash_end(nil) }.to raise_error(Aganakti::QueryResultUnparseableError, 'Encountered unexpected } in response')
+    end
+  end
+
+  describe '#hash_start' do
+    it 'always raises Aganakti::QueryResultUnparseableError' do
+      expect { parser.hash_start(nil) }.to raise_error(Aganakti::QueryResultUnparseableError, 'Encountered unexpected { in response')
+    end
+  end
 
   describe '#parse' do
     context 'with invalid JSON' do
