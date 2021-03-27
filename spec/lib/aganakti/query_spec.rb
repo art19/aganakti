@@ -281,6 +281,19 @@ RSpec.describe Aganakti::Query do
         end
       end
 
+      it 'executes queries with parameters' do
+        with_stub_server(replies) do |port|
+          client     = Aganakti.new("http://localhost:#{port}/good")
+          live_query = described_class.new(
+            client,
+            'SELECT server_type, COUNT(*) FROM sys.servers WHERE plaintext_port = ? GROUP BY server_type ORDER BY 2 DESC',
+            [-1]
+          )
+
+          expect(live_query.to_a).to eq(good_result)
+        end
+      end
+
       it 'handles cURL errors' do
         with_stub_server(replies) do |port|
           client     = Aganakti.new("https://localhost:#{port}/error")
