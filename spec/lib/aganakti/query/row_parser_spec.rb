@@ -19,19 +19,32 @@ RSpec.describe 'Aganakti::Query::RowParser' do # NB: using a string here because
 
   describe '#add_value' do
     context 'when called before receiving an array start' do
-      pending
+      it 'raises Aganakti::QueryResultUnparseableError' do
+        expect { parser.add_value(5, nil) }.to raise_error(Aganakti::QueryResultUnparseableError, 'Encountered value before array start')
+      end
     end
 
     context 'when called after receiving an array end' do
-      pending
+      it 'raises Aganakti::QueryResultUnparseableError' do
+        parser.array_start(nil)
+        parser.array_end(nil)
+
+        expect { parser.add_value(5, nil) }.to raise_error(Aganakti::QueryResultUnparseableError, 'Row was already finished')
+      end
     end
 
     context 'when called after receiving an array start but before receiving an array end' do
-      pending
+      it 'adds the value to the row' do
+        parser.array_start(nil)
+
+        expect { parser.add_value(5, nil) }.to change(parser, :row).from([]).to([5])
+      end
     end
 
     context 'when called with a key' do
-      pending
+      it 'always raises Aganakti::QueryResultUnparseableError' do
+        expect { parser.add_value(5, 'boom') }.to raise_error(Aganakti::QueryResultUnparseableError, 'Encountered unexpected key for a value')
+      end
     end
   end
 
