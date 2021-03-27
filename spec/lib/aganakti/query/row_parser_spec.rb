@@ -17,6 +17,52 @@ RSpec.describe 'Aganakti::Query::RowParser' do # NB: using a string here because
     end
   end
 
+  describe '#add_value' do
+    context 'when called before receiving an array start' do
+      pending
+    end
+
+    context 'when called after receiving an array end' do
+      pending
+    end
+
+    context 'when called after receiving an array start but before receiving an array end' do
+      pending
+    end
+  end
+
+  describe '#array_end' do
+    context 'when called after array_start and without a key' do
+      pending
+    end
+
+    context 'when called after it was already called' do
+      pending
+    end
+
+    context 'when called before array_start was called' do
+      pending
+    end
+
+    context 'when called with a key' do
+      pending
+    end
+  end
+
+  describe '#array_start' do
+    context 'when called after it was already called' do
+      pending
+    end
+
+    context 'when called without a key and without already being called' do
+      pending
+    end
+
+    context 'when called with a key' do
+      pending
+    end
+  end
+
   describe '#hash_end' do
     it 'always raises Aganakti::QueryResultUnparseableError' do
       expect { parser.hash_end(nil) }.to raise_error(Aganakti::QueryResultUnparseableError, 'Encountered unexpected } in response')
