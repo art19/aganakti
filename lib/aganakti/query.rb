@@ -99,16 +99,16 @@ module Aganakti
     # Rather than repeat the same boilerplate over and over, use a template.
     BOOL_SETTING_METHODS.each do |setting|
       class_eval <<-RUBY, __FILE__, __LINE__ + 1
-        def #{setting}                                                               # def with_approximate_count_distinct
-          if executed?                                                               #   if executed?
-            raise QueryAlreadyExecutedError, "#{setting} cannot be set because " \   #     raise QueryAlreadyExecutedError, "with_approximate_count_distinct cannot be set because " \
-                                            'the query has already been executed'    #                                      'the query has already been executed'
-          end                                                                        #   end
-                                                                                     #
-          @#{setting.sub(/\A(with|without)_/, '')} = #{setting.start_with?('with_')} #   @approximate_count_distinct = true
-                                                                                     #
-          self                                                                       #   self
-        end                                                                          # end
+        def #{setting}                                                                   # def with_approximate_count_distinct
+          if executed?                                                                   #   if executed?
+            raise QueryAlreadyExecutedError,                                             #     raise QueryAlreadyExecutedError,
+                  "#{setting} cannot be set because the query has already been executed" #           "with_approximate_count_distinct cannot be set because the query has already been executed"
+          end                                                                            #   end
+                                                                                         #
+          @#{setting.sub(/\A(with|without)_/, '')} = #{setting.start_with?('with_')}     #   @approximate_count_distinct = true
+                                                                                         #
+          self                                                                           #   self
+        end                                                                              # end
       RUBY
     end
 
