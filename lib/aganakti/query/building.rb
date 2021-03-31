@@ -4,9 +4,9 @@ module Aganakti
   class Query
     ##
     # Mixes in methods to build a query. Called by {Aganakti::Query}; you should not
-    # need to use this directly.
+    # use this directly.
     #
-    # @api private
+    # @private
     module Building
       protected
 
@@ -55,5 +55,6 @@ module Aganakti
         }.compact.freeze
       end
     end
+    private_constant :Building
   end
 end
