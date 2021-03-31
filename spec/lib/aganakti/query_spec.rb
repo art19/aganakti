@@ -151,7 +151,14 @@ RSpec.describe Aganakti::Query do
     end
 
     context 'when the query was already executed' do
-      pending
+      it 'raises an Aganakti::QueryAlreadyExecutedError' do
+        query.in_time_zone('Foo/Bar').result
+
+        expect { query.in_time_zone('Foo/Bar') }.to raise_error(
+          Aganakti::QueryAlreadyExecutedError,
+          'in_time_zone cannot be set because the query has already been executed'
+        )
+      end
     end
   end
 
@@ -445,7 +452,14 @@ RSpec.describe Aganakti::Query do
     end
 
     context 'when the query was already executed' do
-      pending
+      it 'raises an Aganakti::QueryAlreadyExecutedError' do
+        query.with_approximate_count_distinct.result
+
+        expect { query.with_approximate_count_distinct }.to raise_error(
+          Aganakti::QueryAlreadyExecutedError,
+          'with_approximate_count_distinct cannot be set because the query has already been executed'
+        )
+      end
     end
   end
 
@@ -511,7 +525,14 @@ RSpec.describe Aganakti::Query do
     end
 
     context 'when the query was already executed' do
-      pending
+      it 'raises an Aganakti::QueryAlreadyExecutedError' do
+        query.with_approximate_top_n.result
+
+        expect { query.with_approximate_top_n }.to raise_error(
+          Aganakti::QueryAlreadyExecutedError,
+          'with_approximate_top_n cannot be set because the query has already been executed'
+        )
+      end
     end
   end
 
@@ -577,7 +598,14 @@ RSpec.describe Aganakti::Query do
     end
 
     context 'when the query was already executed' do
-      pending
+      it 'raises an Aganakti::QueryAlreadyExecutedError' do
+        query.without_approximate_count_distinct.result
+
+        expect { query.without_approximate_count_distinct }.to raise_error(
+          Aganakti::QueryAlreadyExecutedError,
+          'without_approximate_count_distinct cannot be set because the query has already been executed'
+        )
+      end
     end
   end
 
@@ -643,7 +671,14 @@ RSpec.describe Aganakti::Query do
     end
 
     context 'when the query was already executed' do
-      pending
+      it 'raises an Aganakti::QueryAlreadyExecutedError' do
+        query.without_approximate_top_n.result
+
+        expect { query.without_approximate_top_n }.to raise_error(
+          Aganakti::QueryAlreadyExecutedError,
+          'without_approximate_top_n cannot be set because the query has already been executed'
+        )
+      end
     end
   end
 
