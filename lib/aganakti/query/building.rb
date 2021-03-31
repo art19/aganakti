@@ -27,6 +27,7 @@ module Aganakti
       # Builds the query parameters that's included in the query payload.
       #
       # @return [Array<Hash>] query parameters in Druid's expected syntax
+      # @note Druid uses SQL-format timestamps, not ISO8601 timestamps!
       def query_parameters # rubocop:disable Metrics/CyclomaticComplexity, Metrics/MethodLength
         @params.map do |param|
           case param
