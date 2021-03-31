@@ -30,13 +30,14 @@ module Aganakti
       def query_parameters # rubocop:disable Metrics/CyclomaticComplexity, Metrics/MethodLength
         @params.map do |param|
           case param
-          when BigDecimal then { type: 'DECIMAL', value: param.to_s('F') }
-          when Date       then { type: 'DATE', value: param.strftime('%F') }
-          when DateTime   then { type: 'TIMESTAMP', value: param.to_time.utc.strftime('%F %T.%N') }
-          when Float      then { type: 'DOUBLE', value: param }
-          when Integer    then { type: 'INTEGER', value: param }
-          when Time       then { type: 'TIMESTAMP', value: param.utc.strftime('%F %T.%N') }
-          else                 { type: 'VARCHAR', value: param.to_s }
+          when BigDecimal  then { type: 'DECIMAL', value: param.to_s('F') }
+          when DateTime    then { type: 'TIMESTAMP', value: param.to_time.utc.strftime('%F %T.%N') }
+          when Date        then { type: 'DATE', value: param.strftime('%F') }
+          when Float       then { type: 'DOUBLE', value: param }
+          when Integer     then { type: 'INTEGER', value: param }
+          when Time        then { type: 'TIMESTAMP', value: param.utc.strftime('%F %T.%N') }
+          when true, false then { type: 'BOOLEAN', value: param }
+          else                  { type: 'VARCHAR', value: param.to_s }
           end
         end.freeze
       end
