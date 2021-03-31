@@ -5,6 +5,10 @@ RSpec.describe 'Aganakti::Query::RowParser' do # NB: using a string here because
 
   let!(:described_class) { Aganakti::Query.const_get(:RowParser) }
 
+  it 'is a private constant' do
+    expect { Aganakti::Query::RowParser }.to raise_error(NameError, /private constant .* referenced/)
+  end
+
   describe '.parse' do
     before do
       allow(Oj).to receive(:saj_parse)
