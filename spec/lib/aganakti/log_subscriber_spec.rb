@@ -1,5 +1,134 @@
 # frozen_string_literal: true
 
 RSpec.describe Aganakti::LogSubscriber do
-  pending
+  before do
+    allow(ActiveSupport::LogSubscriber).to receive(:colorize_logging).and_return(true)
+    allow(ActiveSupport::LogSubscriber).to receive(:logger).and_return(logger)
+  end
+
+  context 'with a logger that has debugging enabled' do
+    let(:logger) { instance_double(Logger) }
+
+    before do
+      allow(logger).to receive(:debug?).and_return(true)
+      allow(logger).to receive(:debug)
+    end
+
+    context 'without binds or flags' do
+      before do
+        ActiveSupport::Notifications.instrumenter.instrument(
+          'sql.aganakti',
+          name:          'Druid SQL',
+          sql:           'bogus',
+          binds:         [],
+          connection:    nil,
+          query_context: {}
+        )
+      end
+
+      it 'checked the log level of the logger' do
+        expect(logger).to have_received(:debug?)
+      end
+
+      it 'logged the expected message' do
+        expect(logger).to have_received(:debug).with(/
+          \A                           # match at start of text
+          \x20\x20                     # line must start with two spaces
+          \e\[1m                       # bold
+          \e\[35m                      # magenta
+          Druid\x20SQL\x20\(\d\.\dms\) # source and timing information
+          \e\[0m                       # reset
+          \x20\x20                     # two spaces before SQL
+          \e\[1m                       # bold
+          \e\[34m                      # blue
+          bogus                        # SQL
+          \e\[0m                       # reset
+          \z                           # match at end of text
+        /x)
+      end
+    end
+
+    context 'with binds' do
+      before do
+        ActiveSupport::Notifications.instrumenter.instrument(
+          'sql.aganakti',
+          name:          'Druid SQL',
+          sql:           'bogus',
+          binds:         [1, '2', 3.45, BigDecimal('6.7'), true],
+          connection:    nil,
+          query_context: {}
+        )
+      end
+
+      it 'checked the log level of the logger' do
+        expect(logger).to have_received(:debug?)
+      end
+
+      it 'logged the expected message' do # rubocop:disable RSpec/ExampleLength
+        expect(logger).to have_received(:debug).with(/
+          \A                           # match at start of text
+          \x20\x20                     # line must start with two spaces
+          \e\[1m                       # bold
+          \e\[35m                      # magenta
+          Druid\x20SQL\x20\(\d\.\dms\) # source and timing information
+          \e\[0m                       # reset
+          \x20\x20                     # two spaces before SQL
+          \e\[1m                       # bold
+          \e\[34m                      # blue
+          bogus                        # SQL
+          \e\[0m                       # reset
+          \x20\x20                     # two spaces
+          \[                           # the binds array
+            1,\x20
+            "2",\x20
+            3\.45,\x20
+            0\.67e1,\x20
+            true
+          \]
+          \z                           # match at end of text
+        /x)
+      end
+    end
+
+    context 'with one flag' do
+      it 'checked the log level of the logger'
+      it 'logged the expected message'
+    end
+
+    context 'with two flags' do
+      it 'checked the log level of the logger'
+      it 'logged the expected message'
+    end
+
+    context 'with everything turned on' do
+      it 'checked the log level of the logger'
+      it 'logged the expected message'
+    end
+  end
+
+  context 'with a logger that does not have debugging enabled' do
+    let(:logger) { instance_double(Logger) }
+
+    before do
+      allow(logger).to receive(:debug?).and_return(false)
+      allow(logger).to receive(:debug)
+
+      ActiveSupport::Notifications.instrumenter.instrument(
+        'sql.aganakti',
+        name:          'Druid SQL',
+        sql:           'bogus',
+        binds:         [],
+        connection:    nil,
+        query_context: {}
+      )
+    end
+
+    it 'checked the log level of the logger' do
+      expect(logger).to have_received(:debug?)
+    end
+
+    it "didn't log anything" do
+      expect(logger).not_to have_received(:debug)
+    end
+  end
 end
