@@ -11,26 +11,6 @@ RSpec.describe Aganakti::Query do
     end
   end
 
-  shared_context 'with a stubbed request', :stubbed do
-    subject(:query) { described_class.new(client, 'SELECT 1', []) }
-
-    let(:client)           { instance_double(Aganakti::Client, instrumenter: instrumenter, typhoeus_options: typhoeus_options, uri: uri) }
-    let(:instrumenter)     { instance_double(ActiveSupport::Notifications::Instrumenter) }
-    let(:result)           { instance_double(ActiveRecord::Result) }
-    let(:request)          { instance_double(Typhoeus::Request) }
-    let(:response)         { instance_double(Typhoeus::Response) }
-    let(:typhoeus_options) { { headers: { 'Accept' => 'application/json', 'Content-Type' => 'application/json' } } }
-    let(:uri)              { 'http://localhost' }
-
-    before do
-      allow(described_class.const_get(:ResultParser)).to receive(:parse_response).and_return(result)
-      allow(described_class.const_get(:ResultParser)).to receive(:validate_response!)
-      allow(Typhoeus::Request).to receive(:new).and_return(request)
-      allow(instrumenter).to receive(:instrument).and_yield
-      allow(request).to receive(:run).and_return(response)
-    end
-  end
-
   describe '::BOOL_SETTING_METHODS' do
     it 'cannot be accessed normally because it is a private constant' do
       expect { described_class::BOOL_SETTING_METHODS }.to raise_error(NameError, /private constant .*BOOL_SETTING_METHODS referenced/)
@@ -41,7 +21,7 @@ RSpec.describe Aganakti::Query do
     end
   end
 
-  describe '.new', :stubbed do
+  describe '.new', :stubbed_request do
     let(:uuid) { '24f65557-b6e9-4d0c-8962-3bfe711581f5' }
 
     before do
@@ -83,7 +63,7 @@ RSpec.describe Aganakti::Query do
     end
   end
 
-  describe '#executed?', :stubbed do
+  describe '#executed?', :stubbed_request do
     context 'with a query that #result has been called on' do
       before do
         query.result
@@ -97,7 +77,7 @@ RSpec.describe Aganakti::Query do
     end
   end
 
-  describe '#in_time_zone', :stubbed do
+  describe '#in_time_zone', :stubbed_request do
     before do
       allow(Oj).to receive(:dump).and_call_original.once
     end
@@ -162,7 +142,7 @@ RSpec.describe Aganakti::Query do
     end
   end
 
-  describe '#includes_column?', :stubbed do
+  describe '#includes_column?', :stubbed_request do
     if ActiveRecord::VERSION::MAJOR >= 6
       context 'when running using ActiveRecord >= 6' do
         before do
@@ -390,7 +370,7 @@ RSpec.describe Aganakti::Query do
     end
   end
 
-  describe '#with_approximate_count_distinct', :stubbed do
+  describe '#with_approximate_count_distinct', :stubbed_request do
     before do
       allow(Oj).to receive(:dump).and_call_original.once
     end
@@ -463,7 +443,7 @@ RSpec.describe Aganakti::Query do
     end
   end
 
-  describe '#with_approximate_top_n', :stubbed do
+  describe '#with_approximate_top_n', :stubbed_request do
     before do
       allow(Oj).to receive(:dump).and_call_original.once
     end
@@ -536,7 +516,7 @@ RSpec.describe Aganakti::Query do
     end
   end
 
-  describe '#without_approximate_count_distinct', :stubbed do
+  describe '#without_approximate_count_distinct', :stubbed_request do
     before do
       allow(Oj).to receive(:dump).and_call_original.once
     end
@@ -609,7 +589,7 @@ RSpec.describe Aganakti::Query do
     end
   end
 
-  describe '#without_approximate_top_n', :stubbed do
+  describe '#without_approximate_top_n', :stubbed_request do
     before do
       allow(Oj).to receive(:dump).and_call_original.once
     end
@@ -683,7 +663,7 @@ RSpec.describe Aganakti::Query do
   end
 
   %w[[] columns column_types each last length map empty? rows to_ary to_a].each do |del|
-    describe "##{del}", :stubbed do
+    describe "##{del}", :stubbed_request do
       before do
         allow(result).to receive(del.to_sym).once
       end
