@@ -91,18 +91,142 @@ RSpec.describe Aganakti::LogSubscriber do
     end
 
     context 'with one flag' do
-      it 'checked the log level of the logger'
-      it 'logged the expected message'
+      before do
+        ActiveSupport::Notifications.instrumenter.instrument(
+          'sql.aganakti',
+          name:          'Druid SQL',
+          sql:           'bogus',
+          binds:         [],
+          connection:    nil,
+          query_context: {
+            sqlTimeZone: 'Foo/Bar'
+          }
+        )
+      end
+
+      it 'checked the log level of the logger' do
+        expect(logger).to have_received(:debug?)
+      end
+
+      it 'logged the expected message' do # rubocop:disable RSpec/ExampleLength
+        expect(logger).to have_received(:debug).with(%r{
+          \A                           # match at start of text
+          \x20\x20                     # line must start with two spaces
+          \e\[1m                       # bold
+          \e\[35m                      # magenta
+          Druid\x20SQL\x20\(\d\.\dms\) # source and timing information
+          \e\[0m                       # reset
+          \x20\x20                     # two spaces before SQL
+          \e\[1m                       # bold
+          \e\[34m                      # blue
+          bogus                        # SQL
+          \e\[0m                       # reset
+          \e\[1m                       # bold
+          \e\[36m                      # cyan
+          \x20\x20                     # two spaces before flags
+          \(                           # flags
+            in\x20time\x20zone\x20Foo/Bar
+          \)
+          \e\[0m                       # reset
+          \z                           # match at end of text
+        }x)
+      end
     end
 
     context 'with two flags' do
-      it 'checked the log level of the logger'
-      it 'logged the expected message'
+      before do
+        ActiveSupport::Notifications.instrumenter.instrument(
+          'sql.aganakti',
+          name:          'Druid SQL',
+          sql:           'bogus',
+          binds:         [],
+          connection:    nil,
+          query_context: {
+            useApproximateCountDistinct: true,
+            useApproximateTopN:          false
+          }
+        )
+      end
+
+      it 'checked the log level of the logger' do
+        expect(logger).to have_received(:debug?)
+      end
+
+      it 'logged the expected message' do # rubocop:disable RSpec/ExampleLength
+        expect(logger).to have_received(:debug).with(/
+          \A                           # match at start of text
+          \x20\x20                     # line must start with two spaces
+          \e\[1m                       # bold
+          \e\[35m                      # magenta
+          Druid\x20SQL\x20\(\d\.\dms\) # source and timing information
+          \e\[0m                       # reset
+          \x20\x20                     # two spaces before SQL
+          \e\[1m                       # bold
+          \e\[34m                      # blue
+          bogus                        # SQL
+          \e\[0m                       # reset
+          \e\[1m                       # bold
+          \e\[36m                      # cyan
+          \x20\x20                     # two spaces before flags
+          \(                           # flags
+            with\x20approximate\x20count\x20distinct,\x20
+            without\x20approximate\x20top\x20N
+          \)
+          \e\[0m                       # reset
+          \z                           # match at end of text
+        /x)
+      end
     end
 
     context 'with everything turned on' do
-      it 'checked the log level of the logger'
-      it 'logged the expected message'
+      before do
+        ActiveSupport::Notifications.instrumenter.instrument(
+          'sql.aganakti',
+          name:          'Druid SQL',
+          sql:           'bogus',
+          binds:         ['bind'],
+          connection:    nil,
+          query_context: {
+            sqlTimeZone:                 'Foo/Bar',
+            useApproximateCountDistinct: true,
+            useApproximateTopN:          false
+          }
+        )
+      end
+
+      it 'checked the log level of the logger' do
+        expect(logger).to have_received(:debug?)
+      end
+
+      it 'logged the expected message' do # rubocop:disable RSpec/ExampleLength
+        expect(logger).to have_received(:debug).with(%r{
+          \A                           # match at start of text
+          \x20\x20                     # line must start with two spaces
+          \e\[1m                       # bold
+          \e\[35m                      # magenta
+          Druid\x20SQL\x20\(\d\.\dms\) # source and timing information
+          \e\[0m                       # reset
+          \x20\x20                     # two spaces before SQL
+          \e\[1m                       # bold
+          \e\[34m                      # blue
+          bogus                        # SQL
+          \e\[0m                       # reset
+          \e\[1m                       # bold
+          \e\[36m                      # cyan
+          \x20\x20                     # two spaces before flags
+          \(                           # flags
+            in\x20time\x20zone\x20Foo/Bar,\x20
+            with\x20approximate\x20count\x20distinct,\x20
+            without\x20approximate\x20top\x20N
+          \)
+          \e\[0m                       # reset
+          \x20\x20                     # two spaces
+          \[                           # binds
+            "bind"
+          \]
+          \z                           # match at end of text
+        }x)
+      end
     end
   end
 
