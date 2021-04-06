@@ -40,6 +40,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'typhoeus',        '>= 1.4.0'
 
   spec.add_development_dependency 'bundler-audit', '~> 0.8.0'
+  spec.add_development_dependency 'json',          '~> 2.5.1' # this is a stdgem now and is needed by SimpleCov which doesn't pull it in
   spec.add_development_dependency 'rake',          '~> 13.0'
   spec.add_development_dependency 'rdoc',          '~> 6.3.0' # YARD requirement
   spec.add_development_dependency 'redcarpet',     '~> 3.5.1' # YARD requirement
