@@ -56,6 +56,14 @@ RSpec.describe Aganakti do
       pending
     end
 
+    context 'with a specified connection timeout' do
+      pending
+    end
+
+    context 'with a specified timeout' do
+      pending
+    end
+
     context 'with a specified user agent prefix' do
       pending
     end
