@@ -72,6 +72,7 @@ module Aganakti
       case value
       when true then  "with #{human}"
       when false then "without #{human}"
+      else "#{human} = #{value.inspect}"
       end
     end
   end
