@@ -90,6 +90,49 @@ RSpec.describe Aganakti::LogSubscriber do
       end
     end
 
+    context 'with flags set to an unexpected value' do
+      before do
+        ActiveSupport::Notifications.instrumenter.instrument(
+          'sql.aganakti',
+          name:          'Druid SQL',
+          sql:           'bogus',
+          binds:         [],
+          connection:    nil,
+          query_context: {
+            useApproximateTopN: 'test'
+          }
+        )
+      end
+
+      it 'checked the log level of the logger' do
+        expect(logger).to have_received(:debug?)
+      end
+
+      it 'logged the expected message' do # rubocop:disable RSpec/ExampleLength
+        expect(logger).to have_received(:debug).with(/
+          \A                           # match at start of text
+          \x20\x20                     # line must start with two spaces
+          \e\[1m                       # bold
+          \e\[35m                      # magenta
+          Druid\x20SQL\x20\(\d\.\dms\) # source and timing information
+          \e\[0m                       # reset
+          \x20\x20                     # two spaces before SQL
+          \e\[1m                       # bold
+          \e\[34m                      # blue
+          bogus                        # SQL
+          \e\[0m                       # reset
+          \e\[1m                       # bold
+          \e\[36m                      # cyan
+          \x20\x20                     # two spaces before flags
+          \(                           # flags
+            approximate\x20top\x20N\x20=\x20"test"
+          \)
+          \e\[0m                       # reset
+          \z                           # match at end of text
+        /x)
+      end
+    end
+
     context 'with one flag' do
       before do
         ActiveSupport::Notifications.instrumenter.instrument(
