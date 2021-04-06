@@ -88,9 +88,13 @@ module Aganakti
     end
 
     # Build the user agent. Presumably you run the Druid server, so the extra information is for your benefit
-    user_agent = options[:user_agent_prefix].tap do |prefix|
-      [prefix, "Ruby/#{RUBY_VERSION}", "Aganakti/#{Aganakti::VERSION}", "Typhoeus/#{Typhoeus::VERSION}", Ethon::Curl.version].compact.join(' ')
-    end
+    user_agent = [
+      options[:user_agent_prefix],
+      "Aganakti/#{Aganakti::VERSION}",
+      "Typhoeus/#{Typhoeus::VERSION}",
+      "Ruby/#{RUBY_VERSION}",
+      Ethon::Curl.version
+    ].compact.join(' ')
 
     # Finally construct our client
     Client.new uri,
