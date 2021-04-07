@@ -9,11 +9,12 @@ arch:
 - s390x
 - arm64
 rvm:
+# note that jruby cannot be supported because it doesn't support C extensions and this gem doesn't support
+# an alternative to oj, which is a C extension
 - ruby-2.5
 - ruby-2.6
 - ruby-2.7
 - ruby-3.0
-- jruby
 - truffleruby
 gemfile:
 - Gemfile.rails51
@@ -37,13 +38,6 @@ jobs:
     # s390x does not have a Ruby 3.0 available on Travis
     - arch: s390x
       rvm: ruby-3.0
-    # only run jruby on amd64
-    - arch: ppc64le
-      rvm: jruby
-    - arch: s390x
-      rvm: jruby
-    - arch: arm64
-      rvm: jruby
     # only run truffleruby on amd64
     - arch: ppc64le
       rvm: truffleruby
@@ -52,12 +46,6 @@ jobs:
     - arch: arm64
       rvm: truffleruby
   include:
-    # Enable C extensions on JRuby, probably, also disable RuboCop
-    - stage: test
-      rvm: jruby
-      env:
-        - FTP=true
-        - JRUBY_OPTS=-Xcext.enabled=true
     # Don't run Rubocop under TruffleRuby
     - stage: test
       rvm: truffleruby
