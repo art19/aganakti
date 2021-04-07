@@ -1,9 +1,5 @@
 # frozen_string_literal: true
 
-require 'active_support/notifications'
-
-require_relative 'query'
-
 module Aganakti
   ##
   # An instance of a Druid SQL client. Because Typhoeus/libcurl handle all thread and process safety issues, it is not necessary to create a

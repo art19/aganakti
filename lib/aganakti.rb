@@ -1,10 +1,25 @@
 # frozen_string_literal: true
 
+require 'active_support/deprecation'
+require 'active_record/result'
+
+require 'active_record/gem_version'
+require 'active_support/core_ext/module/delegation'
+require 'active_support/log_subscriber'
+require 'active_support/notifications'
+require 'concurrent/utility/monotonic_time'
+require 'oj'
+require 'securerandom'
 require 'typhoeus'
 require 'uri'
 
 require_relative 'aganakti/client'
 require_relative 'aganakti/log_subscriber'
+require_relative 'aganakti/query/building'
+require_relative 'aganakti/query/delegations'
+require_relative 'aganakti/query/result_parser'
+require_relative 'aganakti/query/row_parser'
+require_relative 'aganakti/query'
 require_relative 'aganakti/version'
 
 ##

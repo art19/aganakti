@@ -1,14 +1,5 @@
 # frozen_string_literal: true
 
-require_relative 'query/building'
-require_relative 'query/delegations'
-require_relative 'query/result_parser'
-require_relative 'query/row_parser'
-
-require 'oj'
-require 'securerandom'
-require 'typhoeus'
-
 module Aganakti
   ##
   # This represents a Druid query. The query could already be sent, in which case, you may only fetch results.

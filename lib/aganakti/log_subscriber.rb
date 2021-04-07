@@ -1,8 +1,5 @@
 # frozen_string_literal: true
 
-require 'active_support/log_subscriber'
-require 'concurrent/utility/monotonic_time'
-
 module Aganakti
   ##
   # A log subscriber using the +ActiveSupport::LogSubscriber+ interface. It only logs anything if the logger

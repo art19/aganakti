@@ -1,8 +1,5 @@
 # frozen_string_literal: true
 
-require 'active_record/gem_version'
-require 'active_support/core_ext/module/delegation'
-
 module Aganakti
   class Query
     ##
