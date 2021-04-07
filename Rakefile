@@ -29,6 +29,15 @@ namespace :bundle do
   end
 end
 
+desc 'Build the package and publish it to rubygems.pkg.github.com'
+task publish: :build do
+  require 'aganakti'
+
+  raise 'Set environment variable GEM_PUSH_KEY to the name of a key in ~/.gem/credentials' unless ENV['GEM_PUSH_KEY']
+
+  system("gem push --key #{ENV['GEM_PUSH_KEY']} --host https://rubygems.pkg.github.com/art19 pkg/aganakti-#{Aganakti::VERSION}.gem")
+end
+
 if ENV['FTP']
   # jruby and truffleruby have issues executing rubocop reliably, so provide a hook for bypassing rubocop
   task default: %i[spec bundle:audit]
