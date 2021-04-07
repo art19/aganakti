@@ -46,14 +46,14 @@ jobs:
       gemfile: Gemfile.rails51
       env:
         - FTP=true
-      script: rake || true # ignore failure, pre-zeitwerk versions of Rails seem to trigger a truffleruby bug
+      script: bundle exec rake || true # ignore failure, pre-zeitwerk versions of Rails seem to trigger a truffleruby bug
     - stage: test
       arch: amd64
       rvm: truffleruby
       gemfile: Gemfile.rails52
       env:
         - FTP=true
-      script: rake || true # ignore failure, pre-zeitwerk versions of Rails seem to trigger a truffleruby bug
+      script: bundle exec rake || true # ignore failure, pre-zeitwerk versions of Rails seem to trigger a truffleruby bug
     - stage: test
       arch: amd64
       rvm: truffleruby
