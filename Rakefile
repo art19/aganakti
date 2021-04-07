@@ -29,4 +29,10 @@ namespace :bundle do
   end
 end
 
-task default: %i[spec rubocop bundle:audit]
+if ENV['FTP']
+  # jruby and truffleruby have issues executing rubocop reliably, so provide a hook for bypassing rubocop
+  task default: %i[spec bundle:audit]
+else
+  # if you didn't ask for us to skip rubocop, include it
+  task default: %i[spec rubocop bundle:audit]
+end
