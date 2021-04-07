@@ -35,7 +35,7 @@ Gem::Specification.new do |spec|
 
   spec.add_dependency 'activerecord',    '>= 5.1'
   spec.add_dependency 'activesupport',   '>= 5.1'
-  spec.add_dependency 'concurrent-ruby', '>= 1.1.8'
+  spec.add_dependency 'concurrent-ruby', '>= 1.1.5'
   spec.add_dependency 'oj',              '>= 3.11.3'
   spec.add_dependency 'typhoeus',        '>= 1.4.0'
 
