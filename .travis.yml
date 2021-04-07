@@ -13,6 +13,8 @@ rvm:
 - ruby-2.6
 - ruby-2.7
 - ruby-3.0
+- jruby
+- truffleruby
 gemfile:
 - Gemfile.rails51
 - Gemfile.rails52
@@ -35,6 +37,20 @@ jobs:
     # s390x does not have a Ruby 3.0 available on Travis
     - arch: s390x
       rvm: ruby-3.0
+    # only run jruby on amd64
+    - arch: ppc64le
+      rvm: jruby
+    - arch: s390x
+      rvm: jruby
+    - arch: arm64
+      rvm: jruby
+    # only run truffleruby on amd64
+    - arch: ppc64le
+      rvm: truffleruby
+    - arch: s390x
+      rvm: truffleruby
+    - arch: arm64
+      rvm: truffleruby
   include:
     # Only do coverage in the latest Ruby/Rails on amd64
     - stage: coverage
