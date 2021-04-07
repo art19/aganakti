@@ -95,39 +95,125 @@ RSpec.describe Aganakti do
     end
 
     context 'with a specified but missing CA bundle' do
-      pending
+      let(:ca_bundle) { '/tmp/cacerts.pem' }
+      let(:url)       { 'https://druidserver/query' }
+
+      before do
+        allow(File).to receive(:exist?).with(ca_bundle).and_return(false)
+      end
+
+      it 'raises an Aganakti::ConfigurationError' do
+        expect { described_class.new(url, tls_ca_certificate_bundle: ca_bundle) }
+          .to raise_error(Aganakti::ConfigurationError, "TLS CA certificate bundle file at #{ca_bundle} is missing")
+      end
     end
 
     context 'with a specified but unreadable CA bundle' do
-      pending
+      let(:ca_bundle) { '/tmp/cacerts.pem' }
+      let(:url)       { 'https://druidserver/query' }
+
+      before do
+        allow(File).to receive(:exist?).with(ca_bundle).and_return(true)
+        allow(File).to receive(:readable?).with(ca_bundle).and_return(false)
+      end
+
+      it 'raises an Aganakti::ConfigurationError' do
+        expect { described_class.new(url, tls_ca_certificate_bundle: ca_bundle) }
+          .to raise_error(Aganakti::ConfigurationError, "TLS CA certificate bundle file at #{ca_bundle} is not readable by this user")
+      end
     end
 
     context "with a specified CA bundle but it's a directory" do
-      pending
+      let(:ca_bundle) { '/tmp/cacerts.pem' }
+      let(:url)       { 'https://druidserver/query' }
+
+      before do
+        allow(File).to receive(:exist?).with(ca_bundle).and_return(true)
+        allow(File).to receive(:readable?).with(ca_bundle).and_return(true)
+        allow(File).to receive(:directory?).with(ca_bundle).and_return(true)
+      end
+
+      it 'raises an Aganakti::ConfigurationError' do
+        expect { described_class.new(url, tls_ca_certificate_bundle: ca_bundle) }
+          .to raise_error(Aganakti::ConfigurationError, "TLS CA certificate bundle file at #{ca_bundle} is a directory, but should be a file/symlink")
+      end
     end
 
-    context 'with a specified CA bundle that is correct' do
-      pending
+    context 'with a specified CA bundle that is correct', :stubbed_client do
+      let(:ca_bundle) { '/tmp/cacerts.pem' }
+      let(:url)       { 'https://druidserver/query' }
+
+      before do
+        allow(File).to receive(:exist?).with(ca_bundle).and_return(true)
+        allow(File).to receive(:readable?).with(ca_bundle).and_return(true)
+        allow(File).to receive(:directory?).with(ca_bundle).and_return(false)
+      end
+
+      it 'creates a client with cainfo' do
+        described_class.new(url, tls_ca_certificate_bundle: ca_bundle)
+
+        expect(Aganakti::Client).to have_received(:new).with(anything, hash_including(cainfo: ca_bundle))
+      end
+
+      it "doesn't raise an error" do
+        expect { described_class.new(url, tls_ca_certificate_bundle: ca_bundle) }.not_to raise_error
+      end
     end
 
-    context 'with a specified connection timeout' do
-      pending
+    context 'with a specified connection timeout', :stubbed_client do
+      let(:url) { 'https://druidserver/query' }
+
+      it 'creates a client with connecttimeout' do
+        described_class.new(url, connect_timeout: 5)
+
+        expect(Aganakti::Client).to have_received(:new).with(anything, hash_including(connecttimeout: 5))
+      end
     end
 
-    context 'with a specified timeout' do
-      pending
+    context 'with a specified timeout', :stubbed_client do
+      let(:url) { 'https://druidserver/query' }
+
+      it 'creates a client with timeout' do
+        described_class.new(url, timeout: 30)
+
+        expect(Aganakti::Client).to have_received(:new).with(anything, hash_including(timeout: 30))
+      end
     end
 
-    context 'with a specified user agent prefix' do
-      pending
+    context 'with a specified user agent prefix', :stubbed_client do
+      let(:url) { 'https://druidserver/query' }
+
+      it 'creates a client with the expected user agent' do
+        described_class.new(url, user_agent_prefix: 'TestSuite/1')
+
+        expect(Aganakti::Client).to have_received(:new).with(anything, hash_including(headers: hash_including('User-Agent' => %r{\ATestSuite/1 Aganakti/.*})))
+      end
     end
 
-    context 'with credentials specified in a HTTP URI but without setting the :insecure_plaintext_login option' do
-      pending
+    context 'with credentials specified in a HTTP URI but without setting the :insecure_plaintext_login option', :stubbed_client do
+      let(:url) { 'http://user:pass@druidserver/query' }
+
+      it 'raises an Aganakti::ConfigurationError' do
+        expect { described_class.new(url) }
+          .to raise_error(Aganakti::ConfigurationError,
+                          'Credentials cannot be provided in a HTTP URI without setting the insecure_plaintext_login option. ' \
+                          'Beware that setting this option exposes your credentials to anyone on the network and should not ' \
+                          'be used outside of development.')
+      end
     end
 
-    context 'with credentials specified in a HTTP URI and setting the :insecure_plaintext_login option' do
-      pending
+    context 'with credentials specified in a HTTP URI and setting the :insecure_plaintext_login option', :stubbed_client do
+      let(:url) { 'http://user:pass@druidserver/query' }
+
+      it 'creates a client with the expected URL' do
+        described_class.new(url, insecure_plaintext_login: true)
+
+        expect(Aganakti::Client).to have_received(:new).with(url, anything)
+      end
+
+      it "doesn't raise an error" do
+        expect { described_class.new(url, insecure_plaintext_login: true) }.not_to raise_error
+      end
     end
   end
 end
