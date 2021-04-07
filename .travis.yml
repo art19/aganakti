@@ -52,6 +52,17 @@ jobs:
     - arch: arm64
       rvm: truffleruby
   include:
+    # Enable C extensions on JRuby, probably, also disable RuboCop
+    - stage: test
+      rvm: jruby
+      env:
+        - FTP=true
+        - JRUBY_OPTS=-Xcext.enabled=true
+    # Don't run Rubocop under TruffleRuby
+    - stage: test
+      rvm: truffleruby
+      env:
+        - FTP=true
     # Only do coverage in the latest Ruby/Rails on amd64
     - stage: coverage
       name: Report Test Coverage
