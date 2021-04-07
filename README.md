@@ -49,7 +49,7 @@ This gem officially supports Ruby 2.5, 2.6, 2.7, and 3.0 on aarch64 and x86_64, 
 
 JRuby is unsupported because we rely on Oj, a C extension, and JRuby does not support C extensions. A PR that added support for a Java-compatible JSON stream parser would be entertained, though if you're running on JRuby, you would likely [prefer to use the Druid/Avatica JDBC driver](https://druid.apache.org/docs/latest/querying/sql.html#jdbc) instead.
 
-TruffleRuby passes the test suite, but has exhibited crashes due to the order that things are required, so it's probably not stable enough for production use. If you're a TruffleRuby user and want to dig in and make sure it works correctly, PRs are welcome.
+TruffleRuby passes the test suite, most of the time, but frequently exhibits crashes, so it's probably not stable enough for production use. If you're a TruffleRuby user and want to dig in and make sure it works correctly, PRs are welcome.
 
 Rubinius is not supported, and due to the differing philosophy between its developer and Ruby, it is unlikely that this gem could be made compatible without checks specific to Rubinius or Ruby language level degradation. If you really need this gem to work there and have a PR which doesn't introduce special cases, we would entertain adding support for it.
 
