@@ -10,6 +10,8 @@ if ENV['COVERAGE']
 end
 
 require 'aganakti'
+require 'stub_server'
+require 'webrick'
 
 RSpec.configure do |config|
   # Enable flags like --only-failures and --next-failure

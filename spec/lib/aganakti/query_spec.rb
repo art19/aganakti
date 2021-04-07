@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require 'stub_server'
-
 RSpec.describe Aganakti::Query do
   def with_stub_server(replies)
     StubServer.open(0, replies) do |server|
