@@ -23,7 +23,9 @@ RSpec.describe Aganakti::LogSubscriber do
           binds:         [],
           connection:    nil,
           query_context: {}
-        )
+        ) do
+          # don't do anything; Rails 5.x requires a block to be passed
+        end
       end
 
       it 'checked the log level of the logger' do
@@ -57,7 +59,9 @@ RSpec.describe Aganakti::LogSubscriber do
           binds:         [1, '2', 3.45, BigDecimal('6.7'), true],
           connection:    nil,
           query_context: {}
-        )
+        ) do
+          # don't do anything; Rails 5.x requires a block to be passed
+        end
       end
 
       it 'checked the log level of the logger' do
@@ -101,7 +105,9 @@ RSpec.describe Aganakti::LogSubscriber do
           query_context: {
             useApproximateTopN: 'test'
           }
-        )
+        ) do
+          # don't do anything; Rails 5.x requires a block to be passed
+        end
       end
 
       it 'checked the log level of the logger' do
@@ -144,7 +150,9 @@ RSpec.describe Aganakti::LogSubscriber do
           query_context: {
             sqlTimeZone: 'Foo/Bar'
           }
-        )
+        ) do
+          # don't do anything; Rails 5.x requires a block to be passed
+        end
       end
 
       it 'checked the log level of the logger' do
@@ -188,7 +196,9 @@ RSpec.describe Aganakti::LogSubscriber do
             useApproximateCountDistinct: true,
             useApproximateTopN:          false
           }
-        )
+        ) do
+          # don't do anything; Rails 5.x requires a block to be passed
+        end
       end
 
       it 'checked the log level of the logger' do
@@ -234,7 +244,9 @@ RSpec.describe Aganakti::LogSubscriber do
             useApproximateCountDistinct: true,
             useApproximateTopN:          false
           }
-        )
+        ) do
+          # don't do anything; Rails 5.x requires a block to be passed
+        end
       end
 
       it 'checked the log level of the logger' do
@@ -287,7 +299,9 @@ RSpec.describe Aganakti::LogSubscriber do
         binds:         [],
         connection:    nil,
         query_context: {}
-      )
+      ) do
+        # don't do anything; Rails 5.x requires a block to be passed
+      end
     end
 
     it 'checked the log level of the logger' do
