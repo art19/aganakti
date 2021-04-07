@@ -2,7 +2,7 @@
 
 [![Maintainability](https://api.codeclimate.com/v1/badges/2e54ebd1fc6ff0b8f12b/maintainability)](https://codeclimate.com/github/art19/aganakti/maintainability) [![Test Coverage](https://api.codeclimate.com/v1/badges/2e54ebd1fc6ff0b8f12b/test_coverage)](https://codeclimate.com/github/art19/aganakti/test_coverage)
 
-Aganakti (ᎠᎦᎾᎦᏘ) is a client for performing queries against Apache Druid SQL and Imply. It is designed to be fast, simple to use, thread safe, support multiple Druid servers, and to work just like `ActiveRecord::Base.exec_query`. Currently, we depend on ActiveRecord for `ActiveRecord::Result`, but there are no other Rails requirements. This allows it to have wide Rails compatibility.
+Aganakti (ᎠᎦᎾᎦᏘ) is a client for performing queries against Apache Druid SQL and Imply. It is designed to be fast, simple to use, thread safe, support multiple Druid servers, and to work just like `ActiveRecord::Base.exec_query`. Currently, we depend on ActiveRecord for `ActiveRecord::Result` and ActiveSupport for various functions, but there are no other Rails requirements. This allows it to have wide Rails compatibility. It would also work outside of Rails if you were comfortable bringing in those dependencies.
 
 ## Installation
 
@@ -49,7 +49,7 @@ This gem officially supports Ruby 2.5, 2.6, 2.7, and 3.0 on aarch64 and x86_64, 
 
 JRuby is unsupported because we rely on Oj, a C extension, and JRuby does not support C extensions. A PR that added support for a Java-compatible JSON stream parser would be entertained, though if you're running on JRuby, you would likely [prefer to use the Druid/Avatica JDBC driver](https://druid.apache.org/docs/latest/querying/sql.html#jdbc) instead.
 
-TruffleRuby passes the test suite with Rails 6.0 and 6.1, but does not pass in 5.x, where it crashes instead. This is probably a TruffleRuby bug, as it crashes inside the WEBrick server that the test suite sets up to make sure the HTTP traffic flows as expected. I have no idea why the Rails version would have anything to do with it, but perhaps the Rails 6 switch to Zeitwerk for autoloading has something to it. If you want to get this working, PRs are accepted.
+TruffleRuby passes the test suite, but has exhibited crashes due to the order that things are required, so it's probably not stable enough for production use. If you're a TruffleRuby user and want to dig in and make sure it works correctly, PRs are welcome.
 
 Rubinius is not supported, and due to the differing philosophy between its developer and Ruby, it is unlikely that this gem could be made compatible without checks specific to Rubinius or Ruby language level degradation. If you really need this gem to work there and have a PR which doesn't introduce special cases, we would entertain adding support for it.
 
