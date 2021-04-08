@@ -37,6 +37,14 @@ module Aganakti
       end
 
       ##
+      # Constructs a new parser.
+      def initialize
+        super
+
+        @row = nil
+      end
+
+      ##
       # Takes a string containing a JSON line and parses it using this parser
       #
       # @param line [String] a JSON line
