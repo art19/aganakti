@@ -14,16 +14,20 @@ RSpec.describe Aganakti::Client do
       expect { described_class.new(uri, {}) }.to change { uri.frozen? }.from(false).to(true)
     end
 
-    it 'overrides Accept header' do
-      client = described_class.new('http://localhost', headers: { 'Accept' => 'text/xml' })
+    it 'overrides Accept header case-insensitively' do
+      client = described_class.new('http://localhost', headers: { 'accept' => 'text/xml' })
 
-      expect(client.typhoeus_options[:headers]).to include('Accept' => 'application/json')
+      expect(client.typhoeus_options[:headers]).to satisfy('include Accept key with expected value and exclude accept key') do |h|
+        !h.key?('accept') && h['Accept'] == 'application/json'
+      end
     end
 
-    it 'overrides Content-Type header' do
-      client = described_class.new('http://localhost', headers: { 'Content-Type' => 'text/xml' })
+    it 'overrides Content-Type header case-insensitively' do
+      client = described_class.new('http://localhost', headers: { 'content-type' => 'text/xml' })
 
-      expect(client.typhoeus_options[:headers]).to include('Content-Type' => 'application/json')
+      expect(client.typhoeus_options[:headers]).to satisfy('include Content-Type key with expected value and exclude content-type key') do |h|
+        !h.key?('content-type') && h['Content-Type'] == 'application/json'
+      end
     end
 
     it 'sets up an instrumenter' do
