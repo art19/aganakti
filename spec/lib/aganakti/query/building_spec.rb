@@ -138,7 +138,7 @@ RSpec.describe 'Aganakti::Query::Building' do # NB: using a string here because 
       end
 
       it 'handles Time in a different time zone' do
-        dummy_instance.instance_variable_set(:@params, [Time.at(946_684_800, 123_456_789, :nsec, in: '+09:00')])
+        dummy_instance.instance_variable_set(:@params, [Time.at(946_684_800, 123_456_789, :nsec).getlocal('+09:00')])
 
         expect(query_parameters).to eq([{ type: 'TIMESTAMP', value: '2000-01-01 00:00:00.123456789+0000' }])
       end
