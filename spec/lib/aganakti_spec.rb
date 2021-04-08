@@ -30,7 +30,7 @@ RSpec.describe Aganakti do
       end
     end
 
-    context 'with a FTP URI' do
+    context 'with an FTP URI' do
       it 'raises an Aganakti::ConfigurationError' do
         expect { described_class.new('ftp://segapr.segaamerica.com/SEGA_ARCHIVES/Dreamcast_Games/Seaman/seam7.jpg') }
           .to raise_error(Aganakti::ConfigurationError, 'URI must be a HTTP or HTTPS URI')
