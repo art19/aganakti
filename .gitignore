@@ -10,6 +10,8 @@
 
 # rspec failure tracking
 .rspec_status
+
+# Gemfile.lock files should not be committed to a gem
 Gemfile.lock
 Gemfile.*.lock
 .vscode/
