@@ -48,7 +48,7 @@ module Aganakti
     # @return [String] the escaped identifier
     # @see https://druid.apache.org/docs/latest/querying/sql.html#identifiers-and-literals Apache Druid: SQL: Identifiers and Literals
     def escape_identifier(str)
-      str.gsub('"', '""')
+      str.gsub('"', '""').freeze
     end
 
     ##
@@ -64,7 +64,7 @@ module Aganakti
     # @return [String] the escaped literal
     # @see https://druid.apache.org/docs/latest/querying/sql.html#identifiers-and-literals Apache Druid: SQL: Identifiers and Literals
     def escape_literal(str)
-      str.gsub("'", "''")
+      str.gsub("'", "''").freeze
     end
 
     ##
