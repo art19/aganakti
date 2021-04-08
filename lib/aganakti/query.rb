@@ -21,6 +21,12 @@ module Aganakti
     ].freeze
     private_constant :BOOL_SETTING_METHODS
 
+    # A regex that matches a prefix from BOOL_SETTING_METHODS
+    #
+    # @private
+    WITH_WITHOUT_PREFIX = /\A(with|without)_/.freeze
+    private_constant :WITH_WITHOUT_PREFIX
+
     ##
     # Creates a new Query instance. This is meant to be called by {Aganakti::Client#query}, not directly.
     #
@@ -96,7 +102,7 @@ module Aganakti
                   "#{setting} cannot be set because the query has already been executed" #           "with_approximate_count_distinct cannot be set because the query has already been executed"
           end                                                                            #   end
                                                                                          #
-          @#{setting.sub(/\A(with|without)_/, '')} = #{setting.start_with?('with_')}     #   @approximate_count_distinct = true
+          @#{setting.sub(WITH_WITHOUT_PREFIX, '')} = #{setting.start_with?('with_')}     #   @approximate_count_distinct = true
                                                                                          #
           self                                                                           #   self
         end                                                                              # end
