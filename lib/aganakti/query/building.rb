@@ -34,6 +34,8 @@ module Aganakti
       # @note Druid uses SQL-format timestamps, not ISO8601 timestamps!
       def query_parameters # rubocop:disable Metrics/CyclomaticComplexity, Metrics/MethodLength
         @params.map do |param|
+          # FIXME: this case statement could instead become a set of refinements that allow us to go
+          #        +@params.map(&:to_druid_parameter)+, which might be cleaner
           case param
           when BigDecimal  then { type: 'DECIMAL', value: param.to_s('F') }
           when DateTime    then { type: 'TIMESTAMP', value: param.to_time.utc.strftime(SQL_TIME_FORMAT) }
