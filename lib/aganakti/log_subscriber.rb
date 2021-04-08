@@ -10,6 +10,8 @@ module Aganakti
   class LogSubscriber < ActiveSupport::LogSubscriber
     ##
     # Called by ActiveSupport notifications when there's a SQL query that executes
+    #
+    # @param event [ActiveSupport::Notifications::Event] the aganakti.sql event that was triggered
     def sql(event)
       return unless logger.debug?
 
