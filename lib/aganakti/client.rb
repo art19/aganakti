@@ -25,15 +25,26 @@ module Aganakti
     # @return [String] The URI to make queries against
     attr_reader :uri
 
+    # The headers we forbid because we override them (these must be lowercase strings)
+    FORBIDDEN_HEADERS = %w[accept content-type].freeze
+    private_constant :FORBIDDEN_HEADERS
+
+    # The headers we are overriding
+    HEADER_OVERRIDES = {
+      'Accept' => 'application/json',
+      'Content-Type' => 'application/json'
+    }.freeze
+    private_constant :HEADER_OVERRIDES
+
     ##
     # Creates a new client instance. You probably want to use {Aganakti.new} unless you need to specify your own Typhoeus options.
     #
-    # @param uri [String] The URI to the Druid SQL endpoint, with username/password in it
-    # @param options [Hash] Options to use with Typhoeus
+    # @param uri [String]
+    #   The URI to the Druid SQL endpoint, with username/password in it.
+    # @param options [Hash]
+    #   Options to use with Typhoeus. The Accept and Content-Type headers will be overwritten with the correct MIME types.
     def initialize(uri, options)
-      options[:headers] ||= {}
-      options[:headers]['Accept'] = 'application/json'
-      options[:headers]['Content-Type'] = 'application/json'
+      (options[:headers] ||= {}).delete_if { |key, _value| FORBIDDEN_HEADERS.include?(key.downcase) }.merge!(HEADER_OVERRIDES)
 
       @instrumenter     = ActiveSupport::Notifications.instrumenter
       @typhoeus_options = options.freeze
