@@ -19,6 +19,20 @@ RSpec.describe Aganakti::Query do
     end
   end
 
+  describe '::WITH_WITHOUT_PREFIX' do
+    it 'is a private constant' do
+      expect { described_class::WITH_WITHOUT_PREFIX }.to raise_error(NameError, /private constant .* referenced/)
+    end
+
+    it 'is frozen' do
+      expect(described_class.const_get(:WITH_WITHOUT_PREFIX)).to be_frozen
+    end
+
+    it 'matches what we expect' do
+      expect(described_class.const_get(:WITH_WITHOUT_PREFIX)).to eq(/\A(with|without)_/)
+    end
+  end
+
   describe '.new', :stubbed_request do
     let(:uuid) { '24f65557-b6e9-4d0c-8962-3bfe711581f5' }
 
