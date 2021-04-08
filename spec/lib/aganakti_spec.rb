@@ -190,7 +190,7 @@ RSpec.describe Aganakti do
       end
     end
 
-    context 'with credentials specified in a HTTP URI but without setting the :insecure_plaintext_login option', :stubbed_client do
+    context 'with credentials specified in an HTTP URI but without setting the :insecure_plaintext_login option', :stubbed_client do
       let(:url) { 'http://user:pass@druidserver/query' }
 
       it 'raises an Aganakti::ConfigurationError' do
