@@ -1,0 +1,18 @@
+---
+detectors:
+  UncommunicativeVariableName:
+    enabled: false # rubocop checks this too, and is better at it
+  TooManyInstanceVariables:
+    exclude:
+      - Aganakti::Query
+  TooManyStatements:
+    max_statements: 10
+
+directories:
+  "lib/aganakti/query":
+    IrresponsibleModule:
+      enabled: false
+
+exclude_paths:
+  - spec
+  - vendor/bundle
