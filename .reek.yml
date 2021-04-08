@@ -1,12 +1,21 @@
 ---
 detectors:
-  UncommunicativeVariableName:
-    enabled: false # rubocop checks this too, and is better at it
   TooManyInstanceVariables:
     exclude:
       - Aganakti::Query
   TooManyStatements:
     max_statements: 10
+  UncommunicativeVariableName:
+    enabled: false # rubocop checks this too, and is better at it
+  UtilityFunction:
+    exclude:
+      # These are instance methods because they may one day need to depend on
+      # state attached to the client (as is the case with normal SQL servers),
+      # and we wouldn't want users to have to change code to accommodate this
+      # entirely forseeable possibility
+      - Aganakti::Client#escape_identifier
+      - Aganakti::Client#escape_literal
+      - Aganakti::Client#escape_literal_unicode
 
 directories:
   "lib/aganakti/query":
