@@ -98,7 +98,7 @@ RSpec.describe 'Aganakti::Query::Building' do # NB: using a string here because 
       it 'handles DateTime' do
         dummy_instance.instance_variable_set(:@params, [DateTime.new(2021, 3, 31, 16, 39, 12.3456)])
 
-        expect(query_parameters).to eq([{ type: 'TIMESTAMP', value: '2021-03-31 16:39:12.345600000' }])
+        expect(query_parameters).to eq([{ type: 'TIMESTAMP', value: '2021-03-31 16:39:12.345600000+0000' }])
       end
 
       it 'handles FalseClass' do
@@ -134,7 +134,13 @@ RSpec.describe 'Aganakti::Query::Building' do # NB: using a string here because 
       it 'handles Time' do
         dummy_instance.instance_variable_set(:@params, [Time.at(946_684_800, 123_456_789, :nsec)])
 
-        expect(query_parameters).to eq([{ type: 'TIMESTAMP', value: '2000-01-01 00:00:00.123456789' }])
+        expect(query_parameters).to eq([{ type: 'TIMESTAMP', value: '2000-01-01 00:00:00.123456789+0000' }])
+      end
+
+      it 'handles Time in a different time zone' do
+        dummy_instance.instance_variable_set(:@params, [Time.at(946_684_800, 123_456_789, :nsec, in: '+09:00')])
+
+        expect(query_parameters).to eq([{ type: 'TIMESTAMP', value: '2000-01-01 00:00:00.123456789+0000' }])
       end
 
       it 'handles TrueClass' do
