@@ -1,6 +1,34 @@
 # frozen_string_literal: true
 
 RSpec.describe Aganakti::Client do
+  describe '::FORBIDDEN_HEADERS' do
+    it 'has the expected headers' do
+      expect(described_class.const_get(:FORBIDDEN_HEADERS)).to eq(%w[accept content-type])
+    end
+
+    it 'is a private constant' do
+      expect { described_class::FORBIDDEN_HEADERS }.to raise_error(NameError, /private constant .* referenced/)
+    end
+
+    it 'is frozen' do
+      expect(described_class.const_get(:FORBIDDEN_HEADERS)).to be_frozen
+    end
+  end
+
+  describe '::HEADER_OVERRIDES' do
+    it 'has the expected headers' do
+      expect(described_class.const_get(:HEADER_OVERRIDES)).to eq('Accept' => 'application/json', 'Content-Type' => 'application/json')
+    end
+
+    it 'is a private constant' do
+      expect { described_class::HEADER_OVERRIDES }.to raise_error(NameError, /private constant .* referenced/)
+    end
+
+    it 'is frozen' do
+      expect(described_class.const_get(:HEADER_OVERRIDES)).to be_frozen
+    end
+  end
+
   describe '.new' do
     it 'freezes the options' do
       options = {}
@@ -28,6 +56,24 @@ RSpec.describe Aganakti::Client do
       expect(client.typhoeus_options[:headers]).to satisfy('include Content-Type key with expected value and exclude content-type key') do |h|
         !h.key?('content-type') && h['Content-Type'] == 'application/json'
       end
+    end
+
+    it 'passes through other headers passed' do
+      client = described_class.new('http://localhost', headers: { 'X-Forwarded-For' => '1.2.3.4' })
+
+      expect(client.typhoeus_options[:headers]).to include('X-Forwarded-For' => '1.2.3.4')
+    end
+
+    it 'provides a default Accept header' do
+      client = described_class.new('http://localhost', {})
+
+      expect(client.typhoeus_options[:headers]).to include('Accept' => 'application/json')
+    end
+
+    it 'provides a default Content-Type header' do
+      client = described_class.new('http://localhost', {})
+
+      expect(client.typhoeus_options[:headers]).to include('Content-Type' => 'application/json')
     end
 
     it 'sets up an instrumenter' do
