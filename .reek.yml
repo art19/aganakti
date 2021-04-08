@@ -1,5 +1,17 @@
 ---
 detectors:
+  MissingSafeMethod:
+    exclude:
+      - Aganakti::Query::ResultParser # validate_response! raises, hence the bang, so there is no safe version
+  NilCheck:
+    exclude:
+      # we have no control over the objects Oj sends to us, so we have to determine if they're nil
+      - Aganakti::Query::RowParser#add_value
+      - Aganakti::Query::RowParser#array_end
+      - Aganakti::Query::RowParser#array_start
+  RepeatedConditional:
+    exclude:
+      - Aganakti::Query::RowParser # false positive, it's a different key every time
   TooManyInstanceVariables:
     exclude:
       - Aganakti::Query
