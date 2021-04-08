@@ -52,6 +52,10 @@ RSpec.describe Aganakti::Client do
     it 'passes UTF-8 characters transparently' do
       expect(client.escape_identifier('🍔')).to eq('🍔')
     end
+
+    it 'returns frozen strings' do
+      expect(client.escape_identifier('foo')).to be_frozen
+    end
   end
 
   describe '#escape_literal' do
@@ -67,6 +71,10 @@ RSpec.describe Aganakti::Client do
 
     it 'passes UTF-8 characters transparently' do
       expect(client.escape_literal('ᏗᏟᎶᏍᏙᏗ')).to eq('ᏗᏟᎶᏍᏙᏗ')
+    end
+
+    it 'returns frozen strings' do
+      expect(client.escape_literal('foo')).to be_frozen
     end
   end
 
@@ -97,6 +105,10 @@ RSpec.describe Aganakti::Client do
     it 'explodes when encoding a character outside the Unicode Basic Multilingual Plane' do
       expect { client.escape_literal_unicode('ᎠᏍᏛᎭᏟ means 🥪') }
         .to raise_error(Aganakti::IllegalEscapeError, 'Druid only supports escaping characters in the Unicode Basic Multilingual Plane (U+0000 to U+FFFF)')
+    end
+
+    it 'returns frozen strings' do
+      expect(client.escape_literal_unicode('foo')).to be_frozen
     end
   end
 
