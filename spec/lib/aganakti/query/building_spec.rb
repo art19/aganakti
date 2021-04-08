@@ -16,6 +16,20 @@ RSpec.describe 'Aganakti::Query::Building' do # NB: using a string here because 
     expect { Aganakti::Query::Building }.to raise_error(NameError, /private constant .* referenced/)
   end
 
+  describe '::SQL_TIME_FORMAT' do
+    it 'is a private constant' do
+      expect { described_class::SQL_TIME_FORMAT }.to raise_error(NameError, /private constant .* referenced/)
+    end
+
+    it 'is frozen' do
+      expect(described_class.const_get(:SQL_TIME_FORMAT)).to be_frozen
+    end
+
+    it 'is the correct format' do
+      expect(described_class.const_get(:SQL_TIME_FORMAT)).to eq('%F %T.%N%z')
+    end
+  end
+
   describe '#query_context' do
     let(:query_context) { dummy_instance.send(:query_context) }
 
