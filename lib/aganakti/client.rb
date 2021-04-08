@@ -81,19 +81,21 @@ module Aganakti
     # @return [String] the escaped literal
     # @raise [Aganakti::IllegalEscapeError] if we cannot escape the string passed in
     # @see https://druid.apache.org/docs/latest/querying/sql.html#identifiers-and-literals Apache Druid: SQL: Identifiers and Literals
-    def escape_literal_unicode(str)
+    def escape_literal_unicode(str) # rubocop:disable Metrics/MethodLength
       raise IllegalEscapeError, 'passed string must be UTF-8' unless str.encoding == Encoding::UTF_8
 
-      escape_literal(str).chars.map do |char|
-        raise IllegalEscapeError, 'Druid only supports escaping characters in the Unicode Basic Multilingual Plane (U+0000 to U+FFFF)' if char.ord > 0xFFFF
+      String.new.tap do |out|
+        escape_literal(str).each_codepoint do |char|
+          raise IllegalEscapeError, 'Druid only supports escaping characters in the Unicode Basic Multilingual Plane (U+0000 to U+FFFF)' if char > 0xFFFF
 
-        # characters from 0x00 to 0x7F encode 1:1 to Unicode and do not need to be escaped
-        if char.ord > 0x7F
-          "\\#{format('%04X', char.ord)}"
-        else
-          char
+          # characters from 0x00 to 0x7F encode 1:1 to Unicode and do not need to be escaped
+          out << if char > 0x7F
+                   "\\#{format('%04X', char)}"
+                 else
+                   char
+                 end
         end
-      end.join
+      end.freeze
     end
 
     ##
