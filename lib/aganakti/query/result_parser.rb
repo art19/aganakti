@@ -36,10 +36,11 @@ module Aganakti
         # @raise [Aganakti::QueryError] if either a cURL error occurred or the server was unable to handle the query
         # @raise [Aganakti::QueryTimedOutError] if the query timed out before being able to be executed
         def validate_response!(resp)
-          return if resp.code == 200 # this is intentionally not .success? because all other status codes are unexpected
+          resp_code = resp.code
+          return if resp_code == 200 # this is intentionally not .success? because all other status codes are unexpected
 
           raise QueryTimedOutError if resp.timed_out?
-          raise QueryError, "cURL error #{Ethon::Curl.easy_codes.index(resp.return_code)}: #{resp.return_message}" if resp.code.zero?
+          raise QueryError, "cURL error #{Ethon::Curl.easy_codes.index(resp.return_code)}: #{resp.return_message}" if resp_code.zero?
 
           raise QueryError, parse_query_error(resp.body)
         end
