@@ -8,6 +8,10 @@ module Aganakti
     #
     # @private
     module Building
+      # The SQL time format
+      SQL_TIME_FORMAT = '%F %T.%N%z'
+      private_constant :SQL_TIME_FORMAT
+
       protected
 
       ##
@@ -32,11 +36,11 @@ module Aganakti
         @params.map do |param|
           case param
           when BigDecimal  then { type: 'DECIMAL', value: param.to_s('F') }
-          when DateTime    then { type: 'TIMESTAMP', value: param.to_time.utc.strftime('%F %T.%N') }
+          when DateTime    then { type: 'TIMESTAMP', value: param.to_time.utc.strftime(SQL_TIME_FORMAT) }
           when Date        then { type: 'DATE', value: param.strftime('%F') }
           when Float       then { type: 'DOUBLE', value: param }
           when Integer     then { type: 'INTEGER', value: param }
-          when Time        then { type: 'TIMESTAMP', value: param.utc.strftime('%F %T.%N') }
+          when Time        then { type: 'TIMESTAMP', value: param.utc.strftime(SQL_TIME_FORMAT) }
           when true, false then { type: 'BOOLEAN', value: param }
           else                  { type: 'VARCHAR', value: param.to_s }
           end
