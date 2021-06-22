@@ -41,26 +41,17 @@ RSpec.describe Aganakti::Query do
       allow(SecureRandom).to receive(:uuid).and_return(uuid)
     end
 
-    it "ensures useApproximateCountDistinct isn't passed in the query context by default" do
-      query.result
+    %w[priority sqlTimeZone useApproximateCountDistinct useApproximateTopN useCache].each do |field|
+      it "ensures #{field} isn't passed in the query context by default" do
+        query.result
 
-      expect(Oj).to have_received(:dump).with(
-        hash_including(
-          context: hash_excluding(:useApproximateCountDistinct)
-        ),
-        mode: :strict
-      )
-    end
-
-    it "ensures useApproximateTopN isn't passed in the query context by default" do
-      query.result
-
-      expect(Oj).to have_received(:dump).with(
-        hash_including(
-          context: hash_excluding(:useApproximateTopN)
-        ),
-        mode: :strict
-      )
+        expect(Oj).to have_received(:dump).with(
+          hash_including(
+            context: hash_excluding(field.to_sym)
+          ),
+          mode: :strict
+        )
+      end
     end
 
     it 'generates a random query UUID' do
@@ -86,71 +77,6 @@ RSpec.describe Aganakti::Query do
 
     context 'with a query that #result has never been called on' do
       it('returns false') { expect(query.executed?).to be false }
-    end
-  end
-
-  describe '#in_time_zone', :stubbed_request do
-    before do
-      allow(Oj).to receive(:dump).and_call_original.once
-    end
-
-    context 'when specified' do
-      it "doesn't interact with other flags" do
-        query.in_time_zone('Foo/Bar').without_approximate_count_distinct.result
-
-        expect(Oj).to have_received(:dump).with(
-          hash_including(
-            context: hash_including(useApproximateCountDistinct: false)
-          ),
-          mode: :strict
-        )
-      end
-
-      it 'sets sqlTimeZone to the specified value in the query context' do
-        query.in_time_zone('Foo/Bar').result
-
-        expect(Oj).to have_received(:dump).with(
-          hash_including(
-            context: hash_including(sqlTimeZone: 'Foo/Bar')
-          ),
-          mode: :strict
-        )
-      end
-    end
-
-    context 'when not specified' do
-      it "doesn't interact with other flags" do
-        query.without_approximate_count_distinct.result
-
-        expect(Oj).to have_received(:dump).with(
-          hash_including(
-            context: hash_including(useApproximateCountDistinct: false)
-          ),
-          mode: :strict
-        )
-      end
-
-      it "doesn't set sqlTimeZone in the query context" do
-        query.result
-
-        expect(Oj).to have_received(:dump).with(
-          hash_including(
-            context: hash_excluding(:sqlTimeZone)
-          ),
-          mode: :strict
-        )
-      end
-    end
-
-    context 'when the query was already executed' do
-      it 'raises an Aganakti::QueryAlreadyExecutedError' do
-        query.in_time_zone('Foo/Bar').result
-
-        expect { query.in_time_zone('Foo/Bar') }.to raise_error(
-          Aganakti::QueryAlreadyExecutedError,
-          'in_time_zone cannot be set because the query has already been executed'
-        )
-      end
     end
   end
 
@@ -382,294 +308,91 @@ RSpec.describe Aganakti::Query do
     end
   end
 
-  describe '#with_approximate_count_distinct', :stubbed_request do
-    before do
-      allow(Oj).to receive(:dump).and_call_original.once
+  {
+    in_time_zone:                       [:sqlTimeZone, 'Foo/Bar'],
+    with_approximate_count_distinct:    [:useApproximateCountDistinct, true],
+    with_approximate_top_n:             [:useApproximateTopN, true],
+    with_cache:                         [:useCache, true],
+    with_priority:                      [:priority, 1],
+    without_approximate_count_distinct: [:useApproximateCountDistinct, false],
+    without_approximate_top_n:          [:useApproximateTopN, false],
+    without_cache:                      [:useCache, false]
+  }.each_pair do |meth, (json_key, test_arg)|
+    # Pick the other method to call to check we don't clobber it
+    if %i[with_approximate_count_distinct without_approximate_count_distinct].include?(meth)
+      other_key = :useCache
+      other_meth = :without_cache
+    else
+      other_key = :useApproximateCountDistinct
+      other_meth = :without_approximate_count_distinct
     end
 
-    context 'when specified' do
-      it "doesn't interact with other flags" do
-        query.with_approximate_count_distinct.in_time_zone('Foo/Bar').without_approximate_top_n.result
+    # Get a lambda to call to DRY up this spec
+    call_meth = if meth.to_s.start_with?('with') && meth != :with_priority
+                  ->(query) { query.send(meth) }
+                else
+                  ->(query) { query.send(meth, test_arg) }
+                end
 
-        expect(Oj).to have_received(:dump).with(
-          hash_including(
-            context: hash_including(
-              sqlTimeZone:        'Foo/Bar',
-              useApproximateTopN: false
-            )
-          ),
-          mode: :strict
-        )
+    describe "##{meth}", :stubbed_request do
+      before do
+        allow(Oj).to receive(:dump).and_call_original.once
       end
 
-      it 'sets useApproximateCountDistinct to true in the query context' do
-        query.with_approximate_count_distinct.result
+      context 'when specified' do
+        it "doesn't interact with other flags" do
+          call_meth.call(query).send(other_meth).result
 
-        expect(Oj).to have_received(:dump).with(
-          hash_including(
-            context: hash_including(
-              useApproximateCountDistinct: true
-            )
-          ),
-          mode: :strict
-        )
-      end
-    end
+          expect(Oj).to have_received(:dump).with(
+            hash_including(
+              context: hash_including(other_key => false)
+            ),
+            mode: :strict
+          )
+        end
 
-    context 'when not specified' do
-      it "doesn't interact with other flags" do
-        query.in_time_zone('Foo/Bar').without_approximate_top_n.result
+        it "sets #{json_key} to #{test_arg.inspect} in the query context" do
+          call_meth.call(query).send(other_meth).result
 
-        expect(Oj).to have_received(:dump).with(
-          hash_including(
-            context: hash_including(
-              sqlTimeZone:        'Foo/Bar',
-              useApproximateTopN: false
-            )
-          ),
-          mode: :strict
-        )
+          expect(Oj).to have_received(:dump).with(
+            hash_including(
+              context: hash_including(json_key => test_arg)
+            ),
+            mode: :strict
+          )
+        end
       end
 
-      it "doesn't set useApproximateCountDistinct in the query context" do
-        query.result
+      context 'when not specified' do
+        it "doesn't interact with other flags" do
+          query.send(other_meth).result
 
-        expect(Oj).to have_received(:dump).with(
-          hash_including(
-            context: hash_excluding(:useApproximateCountDistinct)
-          ),
-          mode: :strict
-        )
-      end
-    end
+          expect(Oj).to have_received(:dump).with(
+            hash_including(
+              context: hash_including(other_key => false)
+            ),
+            mode: :strict
+          )
+        end
 
-    context 'when the query was already executed' do
-      it 'raises an Aganakti::QueryAlreadyExecutedError' do
-        query.with_approximate_count_distinct.result
+        it "doesn't set #{json_key} in the query context" do
+          query.result
 
-        expect { query.with_approximate_count_distinct }.to raise_error(
-          Aganakti::QueryAlreadyExecutedError,
-          'with_approximate_count_distinct cannot be set because the query has already been executed'
-        )
-      end
-    end
-  end
-
-  describe '#with_approximate_top_n', :stubbed_request do
-    before do
-      allow(Oj).to receive(:dump).and_call_original.once
-    end
-
-    context 'when specified' do
-      it "doesn't interact with other flags" do
-        query.with_approximate_top_n.in_time_zone('Foo/Bar').without_approximate_count_distinct.result
-
-        expect(Oj).to have_received(:dump).with(
-          hash_including(
-            context: hash_including(
-              sqlTimeZone:                 'Foo/Bar',
-              useApproximateCountDistinct: false
-            )
-          ),
-          mode: :strict
-        )
+          expect(Oj).to have_received(:dump).with(
+            hash_including(
+              context: hash_excluding(json_key)
+            ),
+            mode: :strict
+          )
+        end
       end
 
-      it 'sets useApproximateTopN to true in the query context' do
-        query.with_approximate_top_n.result
+      context 'when the query was already executed' do
+        it 'raises an Aganakti::QueryAlreadyExecutedError' do
+          call_meth.call(query).result
 
-        expect(Oj).to have_received(:dump).with(
-          hash_including(
-            context: hash_including(
-              useApproximateTopN: true
-            )
-          ),
-          mode: :strict
-        )
-      end
-    end
-
-    context 'when not specified' do
-      it "doesn't interact with other flags" do
-        query.in_time_zone('Foo/Bar').without_approximate_count_distinct.result
-
-        expect(Oj).to have_received(:dump).with(
-          hash_including(
-            context: hash_including(
-              sqlTimeZone:                 'Foo/Bar',
-              useApproximateCountDistinct: false
-            )
-          ),
-          mode: :strict
-        )
-      end
-
-      it "doesn't set useApproximateTopN in the query context" do
-        query.result
-
-        expect(Oj).to have_received(:dump).with(
-          hash_including(
-            context: hash_excluding(:useApproximateTopN)
-          ),
-          mode: :strict
-        )
-      end
-    end
-
-    context 'when the query was already executed' do
-      it 'raises an Aganakti::QueryAlreadyExecutedError' do
-        query.with_approximate_top_n.result
-
-        expect { query.with_approximate_top_n }.to raise_error(
-          Aganakti::QueryAlreadyExecutedError,
-          'with_approximate_top_n cannot be set because the query has already been executed'
-        )
-      end
-    end
-  end
-
-  describe '#without_approximate_count_distinct', :stubbed_request do
-    before do
-      allow(Oj).to receive(:dump).and_call_original.once
-    end
-
-    context 'when specified' do
-      it "doesn't interact with other flags" do
-        query.without_approximate_count_distinct.in_time_zone('Foo/Bar').with_approximate_top_n.result
-
-        expect(Oj).to have_received(:dump).with(
-          hash_including(
-            context: hash_including(
-              sqlTimeZone:        'Foo/Bar',
-              useApproximateTopN: true
-            )
-          ),
-          mode: :strict
-        )
-      end
-
-      it 'sets useApproximateCountDistinct to false in the query context' do
-        query.without_approximate_count_distinct.result
-
-        expect(Oj).to have_received(:dump).with(
-          hash_including(
-            context: hash_including(
-              useApproximateCountDistinct: false
-            )
-          ),
-          mode: :strict
-        )
-      end
-    end
-
-    context 'when not specified' do
-      it "doesn't interact with other flags" do
-        query.in_time_zone('Foo/Bar').without_approximate_top_n.result
-
-        expect(Oj).to have_received(:dump).with(
-          hash_including(
-            context: hash_including(
-              sqlTimeZone:        'Foo/Bar',
-              useApproximateTopN: false
-            )
-          ),
-          mode: :strict
-        )
-      end
-
-      it "doesn't set useApproximateCountDistinct in the query context" do
-        query.result
-
-        expect(Oj).to have_received(:dump).with(
-          hash_including(
-            context: hash_excluding(:useApproximateCountDistinct)
-          ),
-          mode: :strict
-        )
-      end
-    end
-
-    context 'when the query was already executed' do
-      it 'raises an Aganakti::QueryAlreadyExecutedError' do
-        query.without_approximate_count_distinct.result
-
-        expect { query.without_approximate_count_distinct }.to raise_error(
-          Aganakti::QueryAlreadyExecutedError,
-          'without_approximate_count_distinct cannot be set because the query has already been executed'
-        )
-      end
-    end
-  end
-
-  describe '#without_approximate_top_n', :stubbed_request do
-    before do
-      allow(Oj).to receive(:dump).and_call_original.once
-    end
-
-    context 'when specified' do
-      it "doesn't interact with other flags" do
-        query.without_approximate_top_n.in_time_zone('Foo/Bar').with_approximate_count_distinct.result
-
-        expect(Oj).to have_received(:dump).with(
-          hash_including(
-            context: hash_including(
-              sqlTimeZone:                 'Foo/Bar',
-              useApproximateCountDistinct: true
-            )
-          ),
-          mode: :strict
-        )
-      end
-
-      it 'sets useApproximateTopN to false in the query context' do
-        query.without_approximate_top_n.result
-
-        expect(Oj).to have_received(:dump).with(
-          hash_including(
-            context: hash_including(
-              useApproximateTopN: false
-            )
-          ),
-          mode: :strict
-        )
-      end
-    end
-
-    context 'when not specified' do
-      it "doesn't interact with other flags" do
-        query.in_time_zone('Foo/Bar').without_approximate_count_distinct.result
-
-        expect(Oj).to have_received(:dump).with(
-          hash_including(
-            context: hash_including(
-              sqlTimeZone:                 'Foo/Bar',
-              useApproximateCountDistinct: false
-            )
-          ),
-          mode: :strict
-        )
-      end
-
-      it "doesn't set useApproximateTopN in the query context" do
-        query.result
-
-        expect(Oj).to have_received(:dump).with(
-          hash_including(
-            context: hash_excluding(:useApproximateTopN)
-          ),
-          mode: :strict
-        )
-      end
-    end
-
-    context 'when the query was already executed' do
-      it 'raises an Aganakti::QueryAlreadyExecutedError' do
-        query.without_approximate_top_n.result
-
-        expect { query.without_approximate_top_n }.to raise_error(
-          Aganakti::QueryAlreadyExecutedError,
-          'without_approximate_top_n cannot be set because the query has already been executed'
-        )
+          expect { call_meth.call(query) }.to raise_error(Aganakti::QueryAlreadyExecutedError, /the query has already been executed/)
+        end
       end
     end
   end
