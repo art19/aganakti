@@ -16,8 +16,10 @@ module Aganakti
     BOOL_SETTING_METHODS = %w[
       with_approximate_count_distinct
       with_approximate_top_n
+      with_cache
       without_approximate_count_distinct
       without_approximate_top_n
+      without_cache
     ].freeze
     private_constant :BOOL_SETTING_METHODS
 
@@ -43,6 +45,8 @@ module Aganakti
       # Initialize SQL context options
       @approximate_count_distinct = nil
       @approximate_top_n          = nil
+      @cache                      = nil
+      @priority                   = nil
       @time_zone                  = nil
     end
 
@@ -93,6 +97,25 @@ module Aganakti
       self
     end
 
+    ##
+    # Sets the priority for this query. Queries with higher priority get precedence for computational resources.
+    #
+    # @param priority [#to_i, nil] the priority to configure or +nil+ to unset
+    # @return [self] this instance, for chaining
+    # @raise [Aganakti::QueryAlreadyExecutedError] if the query has already been executed
+    # @raise [ArgumentError] if the priority passed can't be converted to an integer
+    def with_priority(priority)
+      raise QueryAlreadyExecutedError, 'with_priority cannot be set because the query has already been executed' if executed?
+
+      @priority = if priority.nil?
+                    priority
+                  else
+                    Integer(priority)
+                  end
+
+      self
+    end
+
     # Rather than repeat the same boilerplate over and over, use a template.
     BOOL_SETTING_METHODS.each do |setting|
       class_eval <<-RUBY, __FILE__, __LINE__ + 1
@@ -125,6 +148,14 @@ module Aganakti
     #   @raise [Aganakti::QueryAlreadyExecutedError] if the query has already been executed
 
     ##
+    # @!method with_cache
+    #   Asks Druid to leverage the query cache for this query, if enabled at the broker/historical
+    #   level.
+    #
+    #   @return [self] this instance, for chaining
+    #   @raise [Aganakti::QueryAlreadyExecutedError] if the query has already been executed
+
+    ##
     # @!method without_approximate_count_distinct
     #   Asks Druid not to use an approximate cardinality algorithm for +COUNT(DISTINCT foo)+.
     #
@@ -135,6 +166,13 @@ module Aganakti
     # @!method without_approximate_top_n
     #   Asks Druid not to use approximate TopN queries when a SQL query could be expressed
     #   as such. Exact GroupBy queries will be used instead.
+    #
+    #   @return [self] this instance, for chaining
+    #   @raise [Aganakti::QueryAlreadyExecutedError] if the query has already been executed
+
+    ##
+    # @!method without_cache
+    #   Asks Druid to disable the query cache for this query.
     #
     #   @return [self] this instance, for chaining
     #   @raise [Aganakti::QueryAlreadyExecutedError] if the query has already been executed
