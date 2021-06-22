@@ -33,6 +33,12 @@ RSpec.describe 'Aganakti::Query::Building' do # NB: using a string here because 
   describe '#query_context' do
     let(:query_context) { dummy_instance.send(:query_context) }
 
+    it 'has a priority key' do
+      dummy_instance.instance_variable_set(:@priority, 1312)
+
+      expect(query_context).to eq(priority: 1312)
+    end
+
     it 'has a sqlQueryId key' do
       uuid = SecureRandom.uuid
       dummy_instance.instance_variable_set(:@qid, uuid)
@@ -56,6 +62,12 @@ RSpec.describe 'Aganakti::Query::Building' do # NB: using a string here because 
       dummy_instance.instance_variable_set(:@approximate_top_n, false)
 
       expect(query_context).to eq(useApproximateTopN: false)
+    end
+
+    it 'has a useCache key' do
+      dummy_instance.instance_variable_set(:@cache, true)
+
+      expect(query_context).to eq(useCache: true)
     end
 
     it 'is empty when all the options are nil' do
