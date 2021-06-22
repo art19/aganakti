@@ -20,10 +20,12 @@ module Aganakti
       # @return [Hash] the query context
       def query_context
         {
+          priority:                    @priority,
           sqlQueryId:                  @qid,
           sqlTimeZone:                 @time_zone,
           useApproximateCountDistinct: @approximate_count_distinct,
-          useApproximateTopN:          @approximate_top_n
+          useApproximateTopN:          @approximate_top_n,
+          useCache:                    @cache
         }.compact.freeze
       end
 
