@@ -1,0 +1,39 @@
+---
+detectors:
+  MissingSafeMethod:
+    exclude:
+      - Aganakti::Query::ResultParser # validate_response! raises, hence the bang, so there is no safe version
+  NilCheck:
+    exclude:
+      # we have no control over the objects Oj sends to us, so we have to determine if they're nil
+      - Aganakti::Query::RowParser#add_value
+      - Aganakti::Query::RowParser#array_end
+      - Aganakti::Query::RowParser#array_start
+  RepeatedConditional:
+    exclude:
+      - Aganakti::Query::RowParser # false positive, it's a different key every time
+  TooManyInstanceVariables:
+    exclude:
+      - Aganakti::Query
+  TooManyStatements:
+    max_statements: 10
+  UncommunicativeVariableName:
+    enabled: false # rubocop checks this too, and is better at it
+  UtilityFunction:
+    exclude:
+      # These are instance methods because they may one day need to depend on
+      # state attached to the client (as is the case with normal SQL servers),
+      # and we wouldn't want users to have to change code to accommodate this
+      # entirely forseeable possibility
+      - Aganakti::Client#escape_identifier
+      - Aganakti::Client#escape_literal
+      - Aganakti::Client#escape_literal_unicode
+
+directories:
+  "lib/aganakti/query":
+    IrresponsibleModule:
+      enabled: false
+
+exclude_paths:
+  - spec
+  - vendor/bundle

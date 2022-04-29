@@ -1,0 +1,38 @@
+require: rubocop-rspec
+
+AllCops:
+  NewCops: enable
+  TargetRubyVersion: 2.5
+
+Layout/EndOfLine:
+  EnforcedStyle: lf
+
+Layout/HashAlignment:
+  EnforcedColonStyle: table
+
+Layout/LineLength:
+  Max: 160
+
+Metrics/ParameterLists:
+  CountKeywordArgs: false
+
+# Rubocop needs to fix this bug: https://github.com/rubocop/rubocop/issues/5953
+Style/AccessModifierDeclarations:
+  Enabled: false
+
+Style/PercentLiteralDelimiters:
+  PreferredDelimiters:
+    default: ()
+    '%i': '[]'
+    '%I': '[]'
+    '%r': '{}'
+    '%w': '[]'
+    '%W': '[]'
+
+Style/StringLiterals:
+  Enabled: true
+  EnforcedStyle: single_quotes
+
+Style/StringLiteralsInInterpolation:
+  Enabled: true
+  EnforcedStyle: single_quotes

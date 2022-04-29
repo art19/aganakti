@@ -1,0 +1,101 @@
+language: ruby
+dist: focal
+
+# Multi-arch testing isn't strictly needed, however, many of our dependencies are compiled, and
+# we need to ensure that they exhibit the expected behavior when we use them
+arch:
+- amd64
+- ppc64le
+- s390x
+- arm64
+rvm:
+# note that jruby cannot be supported because it doesn't support C extensions and this gem doesn't support
+# an alternative to oj, which is a C extension
+# also: truffleruby is included explicitly in the job matrix
+- ruby-2.5
+- ruby-2.6
+- ruby-2.7
+- ruby-3.0
+gemfile:
+- Gemfile.rails51
+- Gemfile.rails52
+- Gemfile.rails60
+- Gemfile.rails61
+
+addons:
+  apt:
+    packages:
+    - libcurl4-openssl-dev
+    - libffi-dev
+    - libpthread-stubs0-dev
+
+stages:
+  - test
+  - coverage
+
+jobs:
+  exclude:
+    # s390x does not have a Ruby 3.0 available on Travis
+    - arch: s390x
+      rvm: ruby-3.0
+  include:
+    # TruffleRuby, run without RuboCop
+    - stage: test
+      arch: amd64
+      rvm: truffleruby
+      gemfile: Gemfile.rails51
+      env:
+        - FTP=true
+      script: bundle exec rake || true # it fails randomly due to a truffleruby bug
+    - stage: test
+      arch: amd64
+      rvm: truffleruby
+      gemfile: Gemfile.rails52
+      env:
+        - FTP=true
+      script: bundle exec rake || true # it fails randomly due to a truffleruby bug
+    - stage: test
+      arch: amd64
+      rvm: truffleruby
+      gemfile: Gemfile.rails60
+      env:
+        - FTP=true
+      script: bundle exec rake || true # it fails randomly due to a truffleruby bug
+    - stage: test
+      arch: amd64
+      rvm: truffleruby
+      gemfile: Gemfile.rails61
+      env:
+        - FTP=true
+      script: bundle exec rake || true # it fails randomly due to a truffleruby bug
+    # Only do coverage in the latest Ruby/Rails on amd64
+    - stage: coverage
+      name: Report Test Coverage
+      arch: amd64
+      rvm: ruby-3.0
+      gemfile: Gemfile.rails61
+      env:
+        - COVERAGE=true
+        # CC_TEST_REPORTER_ID
+        - secure: hbzch0ii6c39GuGnoQCr1aAVz/bI/MUj/0rTrOEh/uZTO0TU8rvkt/W9cWr8/fNAi8bWOR2I/zBerDdiy+0XXVuGTPOhtszR+LM7OgzABrmUY37Gh3S41bs1eIiCzNxeg+SWFhKt4bsZZJATrp/2LDapRbnCWowiPLkgmGTwY6Sc7LyrMdOmpWG7ubsUs/PsorxwmUitmbsKChHI9bYsS/6iwCc2sDO0A56k48YRlneuXylkbU3xKP4LHwHWNuze1ySGBZoZVgUU/dEmNdl1mLAyjBooz4tbpXKhT+iB+InicpXXung+GVr6KPALikOSSvMNWWqXkQNPzRJsmfINUy+F3U9AxKcDjPljGUrPHUXcaD5ebXdWBs5QT+tbQD2djAKAORgdDA4Dn5sYbQKEpGsTIxI2fJlLy6h7U7LcFoWsA3+wWqJTdhhlB4l9hWujtSZBa/hxg7C9lI00eHDJSGWPdJzeRG7+7vu0d38RAf+UBuHVTBRN0XABMoS2LVnrqYbGKeCHztQNGn+y/P9ahb5qyLkS8TogXlXDew4kpyuJl2KPqP7GjlOj2+LpVeCQY3PRTXLIR7M5cePibDv62vFeeFBo1iqLRJXikfXqsePj7ev2pTW2C9mvCgqfALecP5XNtGKV92DUKoDeSimtIgWeh9zYSCBhsxC+chLxIsQ=
+      before_script:
+        - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
+        - chmod +x ./cc-test-reporter
+        - ./cc-test-reporter before-build
+      after_script:
+        - ./cc-test-reporter after-build --exit-code $TRAVIS_TEST_RESULT
+
+# Configure notifications to go to ART19's Slack
+notifications:
+  slack:
+    secure: uqkL5MxmVWVRhcjMfU0RoVVxsehBc4T35AvZTpgvMPjr4p4tAyBOaumAuRwS63csepK8RA0XLuHm/Fm8dXguX4PMfxvDcl/Mr2UOkOP4dKGYnoLXaWP0RnjU/kHIbNb578Lnf0rg/bCQGtiNDW8/5/Ilc4BylwexLAHTCIG5cx+Bpw2IcIWQ/ht+4GQc+HpopJ3SxLjxazYKZJWl55VljHxRvhVPv/DUAZS8cM7fyo4zWKpgt4HdXXb2ooN1UUJyQWqP7N+WTvXtyB+Y130FdAVNtwhP63+YpipYS8w6Ppl0xGBNY1xflIX+k5+O11J4h+lUcPuL3Btnnps3fxFnUU/wRbiHSuu/32gyineyoTaDj1ZeQpIRLZOZRPnIApu5EC91YqZB6qc7L77iM75rpvgQNNY+EXyH/3RR6FnIWdQ3RSn2dVMCGIT6V2J/DKht5ib9Bfqx6C+vUvjW/v8UWnWdTIDoGzIobk5J8JwR3QsDrPmBeqUtryty6TfTP8ND/z6qmfL5yZPIEePdzk+AXsroQHydDd+apzG4soo90ox9q2gLHmaYwWVTzHd+vl3z/qZshofEU9ObcKb63jfq5Cm2qTu0Foc8oXp7HBPyTe7ERgz6jimQwsMJycf1Hp8SU/vMlGzGsHkKeinCCVGAgranHiwHmdFyuF19XHwIWDk=
+
+# Caching configuration
+cache:
+  bundler: true
+  directories:
+  - $HOME/.local/share/ruby-advisory-db
+
+# Ensure the same version of bundler gets used as was developed with, in case
+# there's a bug or other compatibility issue
+before_install: gem install bundler -v 2.2.14

@@ -1,0 +1,11 @@
+inherit_from: ../.rubocop.yml
+
+Metrics/BlockLength:
+  Max: 600 # long tests are OK
+
+RSpec/ExampleLength:
+  Max: 15
+
+# This seems to be buggy and is saying I have 7/5 memoized helpers when I have 0
+RSpec/MultipleMemoizedHelpers:
+  Enabled: false
