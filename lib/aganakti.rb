@@ -111,17 +111,22 @@ module Aganakti
       Ethon::Curl.version
     ].compact.join(' ')
 
+    # Form the options for Aganakti::Client to pass to Typhoeus
+    client_options = {
+      accept_encoding: '', # allow libcurl to determine its supported compression
+      headers:         {
+        'Connection' => 'keep-alive',
+        'User-Agent' => user_agent
+      },
+      tcp_keeppalive:  true
+    }
+
+    client_options[:connecttimeout] = options[:connect_timeout] if options.key?(:connect_timeout)
+    client_options[:cainfo] = options[:tls_ca_certificate_bundle] if options.key?(:tls_ca_certificate_bundle)
+    client_options[:timeout] = options[:timeout] if options.key?(:timeout)
+
     # Finally construct our client
-    Client.new uri,
-               accept_encoding: '', # allow libcurl to determine its supported compression
-               cainfo:          options[:tls_ca_certificate_bundle],
-               connecttimeout:  options[:connect_timeout],
-               headers:         {
-                 'Connection' => 'keep-alive',
-                 'User-Agent' => user_agent
-               },
-               tcp_keepalive:   true,
-               timeout:         options[:timeout]
+    Client.new uri, **client_options
   end
   module_function :new
 end
