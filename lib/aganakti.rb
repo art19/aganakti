@@ -122,8 +122,8 @@ module Aganakti
     }
 
     client_options[:connecttimeout] = options[:connect_timeout] if options.key?(:connect_timeout)
-    client_options[:cainfo] = options[:tls_ca_certificate_bundle] if options.key?(:tls_ca_certificate_bundle)
-    client_options[:timeout] = options[:timeout] if options.key?(:timeout)
+    client_options[:cainfo]         = options[:tls_ca_certificate_bundle] if options.key?(:tls_ca_certificate_bundle)
+    client_options[:timeout]        = options[:timeout] if options.key?(:timeout)
 
     # Finally construct our client
     Client.new uri, **client_options
