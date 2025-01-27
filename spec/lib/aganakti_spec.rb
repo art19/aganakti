@@ -40,6 +40,7 @@ RSpec.describe Aganakti do
     %w[HTTP HTTPS].each do |proto|
       context "with a #{proto} URI", :stubbed_client do
         let(:url) { "#{proto.downcase}://druidserver/query" }
+
         let(:default_options) do
           {
             accept_encoding: '',
