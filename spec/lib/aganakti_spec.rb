@@ -41,16 +41,15 @@ RSpec.describe Aganakti do
       context "with a #{proto} URI", :stubbed_client do
         let(:url) { "#{proto.downcase}://druidserver/query" }
 
-        it 'created a client with accept_encoding = ""' do
-          described_class.new(url)
-
-          expect(Aganakti::Client).to have_received(:new).with(anything, hash_including(accept_encoding: ''))
-        end
-
-        it 'created a client with the Connection header set to "keep-alive"' do
-          described_class.new(url)
-
-          expect(Aganakti::Client).to have_received(:new).with(anything, hash_including(headers: hash_including('Connection' => 'keep-alive')))
+        let(:default_options) do
+          {
+            accept_encoding: '',
+            headers:         {
+              'Connection' => 'keep-alive',
+              'User-Agent' => %r{\AAganakti/[\w.]+ Typhoeus/[\w.]+ Ruby/[\w.]+ libcurl/.*}
+            },
+            tcp_keeppalive:  true
+          }
         end
 
         it 'created a client with the expected URL' do
@@ -59,33 +58,10 @@ RSpec.describe Aganakti do
           expect(Aganakti::Client).to have_received(:new).with(url, anything)
         end
 
-        it 'created a client with the User-Agent header set to the default' do
+        it 'creates a client with the default options only' do
           described_class.new(url)
 
-          expect(Aganakti::Client).to have_received(:new).with(anything, hash_including(
-                                                                           headers: hash_including(
-                                                                             # not matching beyond libcurl because it depends on the built libcurl
-                                                                             'User-Agent' => %r{\AAganakti/[\w.]+ Typhoeus/[\w.]+ Ruby/[\w.]+ libcurl/.*}
-                                                                           )
-                                                                         ))
-        end
-
-        it 'created a client without cainfo' do
-          described_class.new(url)
-
-          expect(Aganakti::Client).to have_received(:new).with(anything, hash_including(cainfo: nil))
-        end
-
-        it 'created a client without connecttimeout' do
-          described_class.new(url)
-
-          expect(Aganakti::Client).to have_received(:new).with(anything, hash_including(connecttimeout: nil))
-        end
-
-        it 'created a client without timeout' do
-          described_class.new(url)
-
-          expect(Aganakti::Client).to have_received(:new).with(anything, hash_including(timeout: nil))
+          expect(Aganakti::Client).to have_received(:new).with(url, default_options)
         end
 
         it "doesn't raise an error" do
