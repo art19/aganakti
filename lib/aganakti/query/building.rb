@@ -20,6 +20,7 @@ module Aganakti
       # @return [Hash] the query context
       def query_context
         {
+          enableWindowing:             @windowing,
           priority:                    @priority,
           sqlQueryId:                  @qid,
           sqlTimeZone:                 @time_zone,

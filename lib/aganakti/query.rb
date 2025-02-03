@@ -17,9 +17,11 @@ module Aganakti
       with_approximate_count_distinct
       with_approximate_top_n
       with_cache
+      with_windowing
       without_approximate_count_distinct
       without_approximate_top_n
       without_cache
+      without_windowing
     ].freeze
     private_constant :BOOL_SETTING_METHODS
 
@@ -156,6 +158,13 @@ module Aganakti
     #   @raise [Aganakti::QueryAlreadyExecutedError] if the query has already been executed
 
     ##
+    # @!method with_windowing
+    #  Asks Druid to enable windowing functions for this query.
+    #
+    #  @return [self] this instance, for chaining
+    #  @return [Aganakti::QueryAlreadyExecutedError] if the query has already been executed
+
+    ##
     # @!method without_approximate_count_distinct
     #   Asks Druid not to use an approximate cardinality algorithm for +COUNT(DISTINCT foo)+.
     #
@@ -176,6 +185,14 @@ module Aganakti
     #
     #   @return [self] this instance, for chaining
     #   @raise [Aganakti::QueryAlreadyExecutedError] if the query has already been executed
+    #
+
+    ##
+    # @!method without_windowing
+    #  Asks Druid to disable windowing functions for this query.
+    #
+    #  @return [self] this instance, for chaining
+    #  @return [Aganakti::QueryAlreadyExecutedError] if the query has already been executed
 
     # @!endgroup
 

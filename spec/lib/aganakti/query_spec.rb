@@ -313,10 +313,12 @@ RSpec.describe Aganakti::Query do
     with_approximate_count_distinct:    [:useApproximateCountDistinct, true],
     with_approximate_top_n:             [:useApproximateTopN, true],
     with_cache:                         [:useCache, true],
+    with_windowing:                     [:enableWindowing, true],
     with_priority:                      [:priority, 1],
     without_approximate_count_distinct: [:useApproximateCountDistinct, false],
     without_approximate_top_n:          [:useApproximateTopN, false],
-    without_cache:                      [:useCache, false]
+    without_cache:                      [:useCache, false],
+    without_windowing:                  [:enableWindowing, false]
   }.each_pair do |meth, (json_key, test_arg)|
     # Pick the other method to call to check we don't clobber it
     if %i[with_approximate_count_distinct without_approximate_count_distinct].include?(meth)
