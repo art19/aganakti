@@ -162,7 +162,7 @@ module Aganakti
     #  Asks Druid to enable windowing functions for this query.
     #
     #  @return [self] this instance, for chaining
-    #  @return [Aganakti::QueryAlreadyExecutedError] if the query has already been executed
+    #  @raise [Aganakti::QueryAlreadyExecutedError] if the query has already been executed
 
     ##
     # @!method without_approximate_count_distinct
@@ -192,7 +192,7 @@ module Aganakti
     #  Asks Druid to disable windowing functions for this query.
     #
     #  @return [self] this instance, for chaining
-    #  @return [Aganakti::QueryAlreadyExecutedError] if the query has already been executed
+    #  @raise [Aganakti::QueryAlreadyExecutedError] if the query has already been executed
 
     # @!endgroup
 
