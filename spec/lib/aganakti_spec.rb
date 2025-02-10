@@ -48,7 +48,7 @@ RSpec.describe Aganakti do
               'Connection' => 'keep-alive',
               'User-Agent' => %r{\AAganakti/[\w.]+ Typhoeus/[\w.]+ Ruby/[\w.]+ libcurl/.*}
             },
-            tcp_keeppalive:  true
+            tcp_keepalive:  true
           }
         end
 
