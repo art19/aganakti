@@ -118,7 +118,7 @@ module Aganakti
         'Connection' => 'keep-alive',
         'User-Agent' => user_agent
       },
-      tcp_keeppalive:  true
+      tcp_keepalive:  true
     }
 
     client_options[:connecttimeout] = options[:connect_timeout] if options.key?(:connect_timeout)
