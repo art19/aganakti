@@ -420,4 +420,251 @@ RSpec.describe Aganakti::Query do
       end
     end
   end
+
+  describe '#with_context', :stubbed_request do
+    before do
+      allow(Oj).to receive(:dump).and_call_original.once
+    end
+
+    context 'when setting custom context parameters' do
+      it 'includes the custom context in the query payload' do
+        query.with_context(maxScatterGatherBytes: 1_000_000, timeout: 30_000).result
+
+        expect(Oj).to have_received(:dump).with(
+          hash_including(
+            context: hash_including(
+              maxScatterGatherBytes: 1_000_000,
+              timeout: 30_000
+            )
+          ),
+          mode: :strict
+        )
+      end
+
+      it 'converts string keys to symbols' do
+        query.with_context('maxScatterGatherBytes' => 1_000_000).result
+
+        expect(Oj).to have_received(:dump).with(
+          hash_including(
+            context: hash_including(maxScatterGatherBytes: 1_000_000)
+          ),
+          mode: :strict
+        )
+      end
+
+      it 'allows chaining' do
+        result_query = query.with_context(foo: 1).with_context(bar: 2)
+
+        expect(result_query).to eq(query)
+      end
+
+      it 'merges multiple with_context calls' do
+        query.with_context(foo: 1).with_context(bar: 2).result
+
+        expect(Oj).to have_received(:dump).with(
+          hash_including(
+            context: hash_including(foo: 1, bar: 2)
+          ),
+          mode: :strict
+        )
+      end
+
+      it 'allows later with_context calls to override earlier ones' do
+        query.with_context(foo: 1).with_context(foo: 2).result
+
+        expect(Oj).to have_received(:dump).with(
+          hash_including(
+            context: hash_including(foo: 2)
+          ),
+          mode: :strict
+        )
+      end
+
+      it 'handles empty hash without error' do
+        query.with_context({}).result
+
+        expect(Oj).to have_received(:dump).with(
+          hash_including(
+            context: hash_including(sqlQueryId: String)
+          ),
+          mode: :strict
+        )
+      end
+    end
+
+    context 'when with_context attempts to override other with_* methods' do
+      it 'built-in with_cache takes precedence over with_context' do
+        query.with_cache.with_context(useCache: false).result
+
+        expect(Oj).to have_received(:dump).with(
+          hash_including(
+            context: hash_including(useCache: true)
+          ),
+          mode: :strict
+        )
+      end
+
+      it 'built-in with_approximate_count_distinct takes precedence over with_context' do
+        query.with_approximate_count_distinct.with_context(useApproximateCountDistinct: false).result
+
+        expect(Oj).to have_received(:dump).with(
+          hash_including(
+            context: hash_including(useApproximateCountDistinct: true)
+          ),
+          mode: :strict
+        )
+      end
+
+      it 'built-in in_time_zone takes precedence over with_context' do
+        query.in_time_zone('America/Los_Angeles').with_context(sqlTimeZone: 'UTC').result
+
+        expect(Oj).to have_received(:dump).with(
+          hash_including(
+            context: hash_including(sqlTimeZone: 'America/Los_Angeles')
+          ),
+          mode: :strict
+        )
+      end
+
+      it 'built-in with_priority takes precedence over with_context' do
+        query.with_priority(10).with_context(priority: 5).result
+
+        expect(Oj).to have_received(:dump).with(
+          hash_including(
+            context: hash_including(priority: 10)
+          ),
+          mode: :strict
+        )
+      end
+
+      it 'built-in with_windowing takes precedence over with_context' do
+        query.with_windowing.with_context(enableWindowing: false).result
+
+        expect(Oj).to have_received(:dump).with(
+          hash_including(
+            context: hash_including(enableWindowing: true)
+          ),
+          mode: :strict
+        )
+      end
+    end
+
+    context 'when other with_* methods override with_context' do
+      it 'allows with_cache to override with_context' do
+        query.with_context(useCache: false).with_cache.result
+
+        expect(Oj).to have_received(:dump).with(
+          hash_including(
+            context: hash_including(useCache: true)
+          ),
+          mode: :strict
+        )
+      end
+
+      it 'allows without_cache to override with_context' do
+        query.with_context(useCache: true).without_cache.result
+
+        expect(Oj).to have_received(:dump).with(
+          hash_including(
+            context: hash_including(useCache: false)
+          ),
+          mode: :strict
+        )
+      end
+
+      it 'allows with_approximate_top_n to override with_context' do
+        query.with_context(useApproximateTopN: false).with_approximate_top_n.result
+
+        expect(Oj).to have_received(:dump).with(
+          hash_including(
+            context: hash_including(useApproximateTopN: true)
+          ),
+          mode: :strict
+        )
+      end
+
+      it 'allows in_time_zone to override with_context' do
+        query.with_context(sqlTimeZone: 'UTC').in_time_zone('America/New_York').result
+
+        expect(Oj).to have_received(:dump).with(
+          hash_including(
+            context: hash_including(sqlTimeZone: 'America/New_York')
+          ),
+          mode: :strict
+        )
+      end
+
+      it 'allows with_priority to override with_context' do
+        query.with_context(priority: 5).with_priority(10).result
+
+        expect(Oj).to have_received(:dump).with(
+          hash_including(
+            context: hash_including(priority: 10)
+          ),
+          mode: :strict
+        )
+      end
+
+      it 'allows without_windowing to override with_context' do
+        query.with_context(enableWindowing: true).without_windowing.result
+
+        expect(Oj).to have_received(:dump).with(
+          hash_including(
+            context: hash_including(enableWindowing: false)
+          ),
+          mode: :strict
+        )
+      end
+    end
+
+    context 'when the query was already executed' do
+      it 'raises an Aganakti::QueryAlreadyExecutedError' do
+        query.result
+
+        expect { query.with_context(foo: 1) }.to raise_error(
+          Aganakti::QueryAlreadyExecutedError,
+          'with_context cannot be set because the query has already been executed'
+        )
+      end
+    end
+
+    context 'when combining with_context and other methods' do
+      it "doesn't affect unrelated context parameters" do
+        query.with_context(customParam: 'value').with_cache.result
+
+        expect(Oj).to have_received(:dump).with(
+          hash_including(
+            context: hash_including(
+              customParam: 'value',
+              useCache: true
+            )
+          ),
+          mode: :strict
+        )
+      end
+
+      it 'allows complex chaining scenarios' do
+        query
+          .with_cache
+          .with_context(customParam: 'initial')
+          .with_priority(5)
+          .with_context(anotherParam: 'value')
+          .in_time_zone('America/Los_Angeles')
+          .result
+
+        expect(Oj).to have_received(:dump).with(
+          hash_including(
+            context: hash_including(
+              customParam: 'initial',
+              anotherParam: 'value',
+              useCache: true,
+              priority: 5,
+              sqlTimeZone: 'America/Los_Angeles'
+            )
+          ),
+          mode: :strict
+        )
+      end
+    end
+  end
 end

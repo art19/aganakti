@@ -48,8 +48,10 @@ module Aganakti
       @approximate_count_distinct = nil
       @approximate_top_n          = nil
       @cache                      = nil
+      @custom_context             = {}
       @priority                   = nil
       @time_zone                  = nil
+      @windowing                  = nil
     end
 
     ##
@@ -114,6 +116,32 @@ module Aganakti
                   else
                     Integer(priority)
                   end
+
+      self
+    end
+
+    ##
+    # Merges arbitrary context parameters for this query. This allows you to pass
+    # any Druid context parameters that aren't explicitly supported by other methods.
+    #
+    # Built-in methods (+with_cache+, +with_priority+, +in_time_zone+, etc.) always take
+    # precedence over values set by +with_context+, regardless of call order. This ensures
+    # that explicit, documented methods cannot be accidentally overridden.
+    #
+    # @param context_hash [Hash] hash of context parameters to merge
+    # @return [self] this instance, for chaining
+    # @raise [Aganakti::QueryAlreadyExecutedError] if the query has already been executed
+    #
+    # @example Set custom context parameters
+    #   query.with_context(maxScatterGatherBytes: 1_000_000, timeout: 30000)
+    #
+    # @example Built-in methods always take precedence
+    #   query.with_cache.with_context(useCache: false) # useCache will be true
+    #   query.with_context(useCache: false).with_cache # useCache will be true
+    def with_context(context_hash)
+      raise QueryAlreadyExecutedError, 'with_context cannot be set because the query has already been executed' if executed?
+
+      @custom_context.merge!(context_hash.transform_keys(&:to_sym))
 
       self
     end
