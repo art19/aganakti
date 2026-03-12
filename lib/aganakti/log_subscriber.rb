@@ -26,6 +26,19 @@ module Aganakti
       debug "  #{color(name, MAGENTA, true)}  #{color(sql, BLUE, true)}#{context}#{binds}"
     end
 
+    ##
+    # Called by ActiveSupport notifications when a query cancellation is attempted
+    #
+    # @param event [ActiveSupport::Notifications::Event] the aganakti.cancel event that was triggered
+    def cancel(event)
+      return unless logger.debug?
+
+      query_id = event.payload[:query_id]
+      name     = "Druid SQL Cancel (#{event.duration.round(1)}ms)"
+
+      debug "  #{color(name, RED, true)}  #{color(query_id, BLUE, true)}"
+    end
+
     private
 
     ##

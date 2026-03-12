@@ -13,7 +13,7 @@ RSpec.describe Aganakti do
   end
 
   %i[
-    ConfigurationError IllegalEscapeError QueryAlreadyExecutedError QueryResultTruncatedError
+    ConfigurationError IllegalEscapeError QueryAlreadyExecutedError QueryInterruptedError QueryResultTruncatedError
     QueryResultUnparseableError QueryTimedOutError QueryError
   ].each do |err|
     describe "::#{err}" do
