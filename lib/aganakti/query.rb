@@ -32,6 +32,14 @@ module Aganakti
     private_constant :WITH_WITHOUT_PREFIX
 
     ##
+    # @return [String] the SQL query ID used by Druid to identify this query, usable for cancellation
+    attr_reader :query_id
+
+    ##
+    # @return [Hash, nil] metadata about the query execution, available after the query has been executed
+    attr_reader :metadata
+
+    ##
     # Creates a new Query instance. This is meant to be called by {Aganakti::Client#query}, not directly.
     #
     # @param client [Aganakti::Client] The client
@@ -43,6 +51,8 @@ module Aganakti
       @sql      = sql
       @params   = params
       @qid      = SecureRandom.uuid
+      @query_id = @qid
+      @metadata = nil
 
       # Initialize SQL context options
       @approximate_count_distinct = nil
@@ -78,8 +88,13 @@ module Aganakti
         resp = Typhoeus::Request.new(@client.uri, @client.typhoeus_options.merge(method: :post, body: payload)).run
 
         ResultParser.validate_response!(resp)
-        ResultParser.parse_response(resp).tap do |_|
+        ResultParser.parse_response(resp).tap do |parsed|
           @executed = true
+          @metadata = {
+            total_time_ms:           (resp.total_time * 1000).round(2),
+            time_to_first_byte_ms:   (resp.starttransfer_time * 1000).round(2),
+            response_size_bytes:     resp.body.bytesize
+          }.freeze
         end
       end
     end
@@ -97,6 +112,22 @@ module Aganakti
       raise QueryAlreadyExecutedError, 'in_time_zone cannot be set because the query has already been executed' if executed?
 
       @time_zone = zone
+
+      self
+    end
+
+    ##
+    # Sets a custom SQL query ID for this query. This ID is used by Druid to identify the query
+    # and is required for cancellation. If not set, a random UUID is generated automatically.
+    #
+    # @param id [String] the query ID to use
+    # @return [self] this instance, for chaining
+    # @raise [Aganakti::QueryAlreadyExecutedError] if the query has already been executed
+    def with_query_id(id)
+      raise QueryAlreadyExecutedError, 'with_query_id cannot be set because the query has already been executed' if executed?
+
+      @qid      = id
+      @query_id = id
 
       self
     end

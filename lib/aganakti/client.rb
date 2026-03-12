@@ -125,5 +125,20 @@ module Aganakti
       Query.new(self, sql, params)
     end
     alias ᏥᏔᏲᎯᎭ query # rubocop:disable Naming/AsciiIdentifiers
+
+    ##
+    # Cancels a running query on the Druid server.
+    #
+    # @param query_id [String] the +sqlQueryId+ of the query to cancel
+    # @return [true] if the cancellation was accepted by the server
+    # @raise [Aganakti::QueryError] if the server returned an error
+    def cancel_query(query_id)
+      cancel_uri = "#{@uri}#{query_id}"
+      resp = Typhoeus::Request.new(cancel_uri, @typhoeus_options.merge(method: :delete)).run
+
+      return true if resp.code == 202 || resp.code == 404
+
+      raise QueryError, "Failed to cancel query #{query_id}: HTTP #{resp.code}"
+    end
   end
 end
