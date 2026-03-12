@@ -59,6 +59,10 @@ module Aganakti
   class QueryError < Error; end
 
   ##
+  # The query was cancelled, either by the client or by the server
+  class QueryCancelledError < Error; end
+
+  ##
   # Creates a new client instance.
   #
   # @param uri [String] the URI of the Druid SQL service, including username and password if applicable

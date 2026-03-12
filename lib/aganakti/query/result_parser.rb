@@ -42,7 +42,10 @@ module Aganakti
           raise QueryTimedOutError if resp.timed_out?
           raise QueryError, "cURL error #{Ethon::Curl.easy_codes.index(resp.return_code)}: #{resp.return_message}" if resp_code.zero?
 
-          raise QueryError, parse_query_error(resp.body)
+          error_msg = parse_query_error(resp.body)
+          raise QueryCancelledError, error_msg if query_cancelled?(resp.body)
+
+          raise QueryError, error_msg
         end
 
         private
@@ -65,6 +68,21 @@ module Aganakti
           end
 
           error_msg
+        end
+
+        ##
+        # Determines if the error response indicates the query was cancelled
+        #
+        # @param body [String] the response body
+        # @return [Boolean] true if the query was cancelled
+        def query_cancelled?(body)
+          error_info = Oj.load(body, mode: :strict)
+          error_class = error_info['errorClass'].to_s
+          error_msg   = error_info['errorMessage'].to_s
+
+          error_class.include?('QueryInterruptedException') || error_msg.include?('Cancel') || error_msg.include?('cancel')
+        rescue Oj::ParseError
+          false
         end
       end
     end
