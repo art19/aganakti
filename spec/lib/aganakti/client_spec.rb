@@ -187,4 +187,53 @@ RSpec.describe Aganakti::Client do
       expect(Aganakti::Query).to have_received(:new).with(client, 'SELECT foo FROM datasource WHERE bar = ? AND baz = ?', [42, 'Testing'])
     end
   end
+
+  describe '#cancel_query' do
+    subject(:client) { described_class.new('http://localhost/druid/v2/sql/', {}) }
+
+    let(:query_id) { SecureRandom.uuid }
+    let(:request)  { instance_double(Typhoeus::Request) }
+    let(:response) { instance_double(Typhoeus::Response) }
+
+    before do
+      allow(Typhoeus::Request).to receive(:new).and_return(request)
+      allow(request).to receive(:run).and_return(response)
+    end
+
+    context 'when Druid accepts the cancellation (202)' do
+      before { allow(response).to receive(:code).and_return(202) }
+
+      it 'returns true' do
+        expect(client.cancel_query(query_id)).to be true
+      end
+
+      it 'sends a DELETE request to the correct URI' do
+        client.cancel_query(query_id)
+
+        expect(Typhoeus::Request).to have_received(:new).with(
+          "http://localhost/druid/v2/sql/#{query_id}",
+          hash_including(method: :delete)
+        )
+      end
+    end
+
+    context 'when the query already finished (404)' do
+      before { allow(response).to receive(:code).and_return(404) }
+
+      it 'returns true' do
+        expect(client.cancel_query(query_id)).to be true
+      end
+    end
+
+    context 'when Druid returns an unexpected error' do
+      before { allow(response).to receive(:code).and_return(500) }
+
+      it 'raises a QueryError' do
+        expect { client.cancel_query(query_id) }.to raise_error(
+          Aganakti::QueryError,
+          "Failed to cancel query #{query_id}: HTTP 500"
+        )
+      end
+    end
+  end
 end
