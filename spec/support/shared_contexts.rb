@@ -11,9 +11,9 @@ RSpec.shared_context 'with a stubbed request and response', :stubbed_request do
 
   let(:client)           { instance_double(Aganakti::Client, instrumenter: instrumenter, typhoeus_options: typhoeus_options, uri: uri) }
   let(:instrumenter)     { instance_double(ActiveSupport::Notifications::Instrumenter) }
-  let(:result)           { instance_double(ActiveRecord::Result) }
+  let(:result)           { instance_double(ActiveRecord::Result, rows: []) }
   let(:request)          { instance_double(Typhoeus::Request) }
-  let(:response)         { instance_double(Typhoeus::Response) }
+  let(:response)         { instance_double(Typhoeus::Response, total_time: 0.15, starttransfer_time: 0.1, body: '[]') }
   let(:typhoeus_options) { { headers: { 'Accept' => 'application/json', 'Content-Type' => 'application/json' } } }
   let(:uri)              { 'http://localhost' }
 

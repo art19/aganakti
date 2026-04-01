@@ -164,6 +164,11 @@ RSpec.describe Aganakti::Query do
       RESPONSE
     end
 
+    let(:cancelled_response) do
+      '{"error":"Query cancelled","errorMessage":"Query cancelled by user",' \
+      '"errorClass":"org.apache.druid.query.QueryInterruptedException","host":null}'
+    end
+
     # Standard response headers that all requests return
     let(:response_headers) do
       {
@@ -178,6 +183,7 @@ RSpec.describe Aganakti::Query do
         '/error' => [400, response_headers, [error_response]],
         '/error2' => [500, {}, ['Internal Server Error']],
         '/error3' => [500, response_headers, ['{"problem":true}']],
+        '/cancelled' => [500, response_headers, [cancelled_response]],
         '/timeout' => [200, response_headers, timeout_response.first],
         '/truncated' => [200, response_headers, [truncated_response]]
       }
@@ -255,6 +261,19 @@ RSpec.describe Aganakti::Query do
 
           expect { live_query.to_a }.to raise_error(Aganakti::QueryError, 'Plan validation failed: org.apache.calcite.runtime.CalciteContextException: ' \
                                                                           'At line 1, column 77: Ordinal out of range')
+        end
+      end
+
+      it 'handles cancelled queries' do
+        with_stub_server(replies) do |port|
+          client     = Aganakti.new("http://localhost:#{port}/cancelled")
+          live_query = query.call(client)
+
+          expect { live_query.to_a }.to raise_error(Aganakti::QueryInterruptedError, 'Query cancelled: Query cancelled by user') do |error|
+            expect(error.error_code).to eq('Query cancelled')
+            expect(error).to be_cancelled
+            expect(error).not_to be_timeout
+          end
         end
       end
 
@@ -418,6 +437,67 @@ RSpec.describe Aganakti::Query do
       it 'is properly identified as existing via #respond_to?' do
         expect(query).to respond_to(del.to_sym)
       end
+    end
+  end
+
+  describe '#query_id', :stubbed_request do
+    it 'returns the auto-generated UUID' do
+      expect(query.query_id).to match(/\A[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\z/)
+    end
+
+    it 'matches the sqlQueryId sent to Druid' do
+      allow(Oj).to receive(:dump).and_call_original.once
+
+      query.result
+
+      expect(Oj).to have_received(:dump).with(
+        hash_including(context: hash_including(sqlQueryId: query.query_id)),
+        mode: :strict
+      )
+    end
+  end
+
+  describe '#with_query_id', :stubbed_request do
+    let(:custom_id) { SecureRandom.uuid }
+
+    before do
+      allow(Oj).to receive(:dump).and_call_original.once
+    end
+
+    it 'overrides the auto-generated query ID' do
+      query.with_query_id(custom_id)
+
+      expect(query.query_id).to eq(custom_id)
+    end
+
+    it 'sets the custom ID as sqlQueryId in the query context' do
+      query.with_query_id(custom_id).result
+
+      expect(Oj).to have_received(:dump).with(
+        hash_including(context: hash_including(sqlQueryId: custom_id)),
+        mode: :strict
+      )
+    end
+
+    it 'returns self for chaining' do
+      expect(query.with_query_id(custom_id)).to eq(query)
+    end
+
+    context 'when the query was already executed' do
+      it 'raises an Aganakti::QueryAlreadyExecutedError' do
+        query.result
+
+        expect { query.with_query_id(custom_id) }.to raise_error(
+          Aganakti::QueryAlreadyExecutedError,
+          'with_query_id cannot be set because the query has already been executed'
+        )
+      end
+    end
+  end
+
+  describe '#metadata', :stubbed_request do
+    it 'is nil before execution' do
+      expect(query.metadata).to be_nil
     end
   end
 

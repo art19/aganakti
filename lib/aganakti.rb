@@ -59,6 +59,29 @@ module Aganakti
   class QueryError < Error; end
 
   ##
+  # The query was interrupted by Druid. Check +error_code+ or use +cancelled?+ / +timeout?+
+  # to determine the specific cause.
+  class QueryInterruptedError < Error
+    # @return [String, nil] the Druid error code (e.g., "Query cancelled", "Query timeout")
+    attr_reader :error_code
+
+    def initialize(message, error_code: nil)
+      super(message)
+      @error_code = error_code
+    end
+
+    # @return [Boolean] true if the query was cancelled by a user via DELETE
+    def cancelled?
+      error_code == 'Query cancelled'
+    end
+
+    # @return [Boolean] true if the query timed out
+    def timeout?
+      error_code == 'Query timeout'
+    end
+  end
+
+  ##
   # Creates a new client instance.
   #
   # @param uri [String] the URI of the Druid SQL service, including username and password if applicable

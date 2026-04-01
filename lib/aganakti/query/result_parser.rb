@@ -42,7 +42,11 @@ module Aganakti
           raise QueryTimedOutError if resp.timed_out?
           raise QueryError, "cURL error #{Ethon::Curl.easy_codes.index(resp.return_code)}: #{resp.return_message}" if resp_code.zero?
 
-          raise QueryError, parse_query_error(resp.body)
+          error_msg = parse_query_error(resp.body)
+          error_code = parse_error_code(resp.body)
+          raise QueryInterruptedError.new(error_msg, error_code: error_code) if query_interrupted?(resp.body)
+
+          raise QueryError, error_msg
         end
 
         private
@@ -65,6 +69,30 @@ module Aganakti
           end
 
           error_msg
+        end
+
+        ##
+        # Determines if the error response indicates the query was interrupted by Druid
+        #
+        # @param body [String] the response body
+        # @return [Boolean] true if the query was interrupted
+        def query_interrupted?(body)
+          error_info = Oj.load(body, mode: :strict)
+          error_info['errorClass'].to_s.include?('QueryInterruptedException')
+        rescue Oj::ParseError
+          false
+        end
+
+        ##
+        # Extracts the Druid error code from the response body
+        #
+        # @param body [String] the response body
+        # @return [String, nil] the error code
+        def parse_error_code(body)
+          error_info = Oj.load(body, mode: :strict)
+          error_info['error']
+        rescue Oj::ParseError
+          nil
         end
       end
     end
