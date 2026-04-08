@@ -72,7 +72,7 @@ module Aganakti
 
     # @return [Boolean] true if the query was cancelled by a user via DELETE
     def cancelled?
-      error_code == 'Query cancelled'
+      error_code == 'Query cancelled' || message.to_s.downcase.then { |m| m.include?('canceled') || m.include?('cancelled') }
     end
 
     # @return [Boolean] true if the query timed out

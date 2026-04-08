@@ -80,7 +80,8 @@ module Aganakti
           error_info = Oj.load(body, mode: :strict)
           error_class = error_info['errorClass'].to_s
           error_class.include?('QueryInterruptedException') ||
-            error_class.include?('CancellationException')
+            error_class.include?('CancellationException') ||
+            error_info['errorMessage'].to_s.downcase.then { |m| m.include?('canceled') || m.include?('cancelled') }
         rescue Oj::ParseError
           false
         end
