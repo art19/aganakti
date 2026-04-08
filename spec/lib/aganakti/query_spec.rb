@@ -169,6 +169,11 @@ RSpec.describe Aganakti::Query do
       '"errorClass":"org.apache.druid.query.QueryInterruptedException","host":null}'
     end
 
+    let(:delete_cancelled_response) do
+      '{"error":"Query cancelled","errorMessage":"Task was cancelled.",' \
+      '"errorClass":"java.util.concurrent.CancellationException","host":null}'
+    end
+
     # Standard response headers that all requests return
     let(:response_headers) do
       {
@@ -184,6 +189,7 @@ RSpec.describe Aganakti::Query do
         '/error2' => [500, {}, ['Internal Server Error']],
         '/error3' => [500, response_headers, ['{"problem":true}']],
         '/cancelled' => [500, response_headers, [cancelled_response]],
+        '/delete_cancelled' => [500, response_headers, [delete_cancelled_response]],
         '/timeout' => [200, response_headers, timeout_response.first],
         '/truncated' => [200, response_headers, [truncated_response]]
       }
@@ -270,6 +276,19 @@ RSpec.describe Aganakti::Query do
           live_query = query.call(client)
 
           expect { live_query.to_a }.to raise_error(Aganakti::QueryInterruptedError, 'Query cancelled: Query cancelled by user') do |error|
+            expect(error.error_code).to eq('Query cancelled')
+            expect(error).to be_cancelled
+            expect(error).not_to be_timeout
+          end
+        end
+      end
+
+      it 'handles queries cancelled via DELETE (CancellationException)' do
+        with_stub_server(replies) do |port|
+          client     = Aganakti.new("http://localhost:#{port}/delete_cancelled")
+          live_query = query.call(client)
+
+          expect { live_query.to_a }.to raise_error(Aganakti::QueryInterruptedError, 'Query cancelled: Task was cancelled.') do |error|
             expect(error.error_code).to eq('Query cancelled')
             expect(error).to be_cancelled
             expect(error).not_to be_timeout

@@ -78,7 +78,9 @@ module Aganakti
         # @return [Boolean] true if the query was interrupted
         def query_interrupted?(body)
           error_info = Oj.load(body, mode: :strict)
-          error_info['errorClass'].to_s.include?('QueryInterruptedException')
+          error_class = error_info['errorClass'].to_s
+          error_class.include?('QueryInterruptedException') ||
+            error_class.include?('CancellationException')
         rescue Oj::ParseError
           false
         end
