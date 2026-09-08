@@ -90,6 +90,11 @@ module Aganakti
   #   How many seconds to wait for a connection to be established to the server, 0 means 300 seconds
   # @option options [Boolean] :insecure_plaintext_login (false)
   #   Set to true to permit credentials to be passed with http:// URIs
+  # @option options [Array<String>] :resolve
+  #   Optional custom hostname resolution entries in libcurl +CURLOPT_RESOLVE+ format,
+  #   <tt>"host:port:address"</tt> (e.g., <tt>["druid.example.com:8443:127.0.0.1"]</tt>). Use this to
+  #   connect through a local tunnel or to a specific IP while keeping the real hostname in the URI,
+  #   so TLS certificate verification remains fully enabled. Prefer this over disabling verification.
   # @option options [Integer] :timeout (0)
   #   How many seconds to wait for a response from the server after connecting, 0 means wait forever
   # @option options [String] :tls_ca_certificate_bundle
@@ -125,6 +130,17 @@ module Aganakti
       end
     end
 
+    # Check that any custom resolution entries are in libcurl's "host:port:address" format
+    options[:resolve].tap do |entries|
+      unless entries.nil?
+        raise ConfigurationError, 'resolve must be an Array of Strings' unless entries.is_a?(Array) && entries.all?(String)
+
+        entries.each do |entry|
+          raise ConfigurationError, "resolve entry #{entry.inspect} must be in \"host:port:address\" format" unless entry.match?(/\A[^\s:]+:\d+:\S+\z/)
+        end
+      end
+    end
+
     # Build the user agent. Presumably you run the Druid server, so the extra information is for your benefit
     user_agent = [
       options[:user_agent_prefix],
@@ -147,6 +163,15 @@ module Aganakti
     client_options[:connecttimeout] = options[:connect_timeout] if options.key?(:connect_timeout)
     client_options[:cainfo]         = options[:tls_ca_certificate_bundle] if options.key?(:tls_ca_certificate_bundle)
     client_options[:timeout]        = options[:timeout] if options.key?(:timeout)
+
+    # Ethon only accepts CURLOPT_RESOLVE as a raw curl_slist pointer, so build one from the entries.
+    # The list is intentionally never freed: it must outlive every request the client makes, and a
+    # client lives for the life of the process.
+    options[:resolve].tap do |entries|
+      if entries.is_a?(Array) && !entries.empty?
+        client_options[:resolve] = entries.reduce(FFI::Pointer::NULL) { |list, entry| Ethon::Curl.slist_append(list, entry) }
+      end
+    end
 
     # Finally construct our client
     Client.new uri, **client_options
