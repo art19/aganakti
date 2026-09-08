@@ -191,5 +191,61 @@ RSpec.describe Aganakti do
         expect { described_class.new(url, insecure_plaintext_login: true) }.not_to raise_error
       end
     end
+
+    context 'with a specified resolve list', :stubbed_client do
+      let(:url) { 'https://druidserver:8443/query' }
+
+      it 'creates a client with resolve set to a curl_slist pointer' do
+        described_class.new(url, resolve: ['druidserver:8443:127.0.0.1'])
+
+        expect(Aganakti::Client).to have_received(:new).with(anything, hash_including(resolve: kind_of(FFI::Pointer)))
+      end
+
+      it "doesn't raise an error" do
+        expect { described_class.new(url, resolve: ['druidserver:8443:127.0.0.1']) }.not_to raise_error
+      end
+    end
+
+    context 'with an empty resolve list', :stubbed_client do
+      let(:url) { 'https://druidserver/query' }
+
+      it 'does not set resolve on the client' do
+        described_class.new(url, resolve: [])
+
+        expect(Aganakti::Client).to have_received(:new).with(anything, satisfy { |opts| !opts.key?(:resolve) })
+      end
+    end
+
+    context 'with a resolve list that is not an Array of Strings', :stubbed_client do
+      let(:url) { 'https://druidserver/query' }
+
+      ['druidserver:8443:127.0.0.1', [42], nil].compact.each do |bad_value|
+        it "raises an Aganakti::ConfigurationError for #{bad_value.inspect}" do
+          expect { described_class.new(url, resolve: bad_value) }
+            .to raise_error(Aganakti::ConfigurationError, 'resolve must be an Array of Strings')
+        end
+      end
+    end
+
+    context 'with a resolve entry in the wrong format', :stubbed_client do
+      let(:url) { 'https://druidserver/query' }
+
+      ['druidserver:127.0.0.1', 'druidserver:port:127.0.0.1', 'druidserver 8443 127.0.0.1', ''].each do |bad_entry|
+        it "raises an Aganakti::ConfigurationError for #{bad_entry.inspect}" do
+          expect { described_class.new(url, resolve: [bad_entry]) }
+            .to raise_error(Aganakti::ConfigurationError, "resolve entry #{bad_entry.inspect} must be in \"host:port:address\" format")
+        end
+      end
+    end
+
+    context 'without a resolve list', :stubbed_client do
+      let(:url) { 'https://druidserver/query' }
+
+      it 'does not set resolve on the client' do
+        described_class.new(url)
+
+        expect(Aganakti::Client).to have_received(:new).with(anything, satisfy { |opts| !opts.key?(:resolve) })
+      end
+    end
   end
 end
